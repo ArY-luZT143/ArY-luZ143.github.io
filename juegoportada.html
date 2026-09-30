@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mini Arcade | Juegos</title>
+
+<style>
+
+/* =========================================
+   CONFIGURACIÓN GENERAL
+========================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+    min-height: 100vh;
+
+    background:
+        linear-gradient(
+            rgba(5, 3, 20, 0.72),
+            rgba(5, 3, 20, 0.82)
+        ),
+        url("arcadebckg.jpg.jpeg");
+
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+
+    overflow-x: hidden;
+}
+
+
+/* =========================================
+   EFECTOS DE LUZ DEL FONDO
+========================================= */
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+
+    background:
+        radial-gradient(
+            circle at 15% 30%,
+            rgba(0, 238, 255, 0.15),
+            transparent 25%
+        ),
+
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(255, 0, 180, 0.18),
+            transparent 25%
+        ),
+
+        radial-gradient(
+            circle at 50% 80%,
+            rgba(110, 0, 255, 0.18),
+            transparent 30%
+        );
+
+    pointer-events: none;
+    z-index: -1;
+}
+
+
+/* =========================================
+   BARRA DE NAVEGACIÓN
+========================================= */
+
+nav {
+    width: 94%;
+    margin: 18px auto;
+
+    min-height: 72px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 10px 25px;
+
+    background: rgba(7, 5, 30, 0.90);
+
+    border: 2px solid #513dff;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 0 8px #513dff,
+        0 0 20px rgba(81, 61, 255, 0.7),
+        inset 0 0 20px rgba(81, 61, 255, 0.15);
+
+    backdrop-filter: blur(8px);
+}
+
+
+/* LOGO */
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    font-size: 25px;
+    font-weight: bold;
+
+    color: #ffffff;
+
+    text-shadow:
+        0 0 5px #00eaff,
+        0 0 15px #00eaff;
+}
+
+.logo-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: #11102b;
+
+    border: 2px solid #00eaff;
+
+    box-shadow:
+        0 0 8px #00eaff,
+        inset 0 0 12px rgba(0, 234, 255, .25);
+
+    font-size: 25px;
+}
+
+
+/* MENÚ */
+
+.menu {
+    display: flex;
+    gap: 7px;
+
+    background: rgba(0,0,0,.35);
+
+    padding: 6px;
+
+    border-radius: 13px;
+}
+
+.menu a {
+    color: #ddd9ff;
+
+    text-decoration: none;
+
+    padding: 12px 17px;
+
+    border-radius: 10px;
+
+    font-weight: bold;
+
+    transition: .25s;
+}
+
+.menu a:hover {
+    color: white;
+
+    border: 1px solid #00eaff;
+
+    box-shadow:
+        0 0 8px #00eaff,
+        0 0 20px rgba(0,234,255,.5);
+
+    background: rgba(0,234,255,.08);
+}
+
+.menu .activo {
+    color: white;
+
+    border: 1px solid #ff25d7;
+
+    box-shadow:
+        0 0 8px #ff25d7,
+        0 0 20px rgba(255,37,215,.6);
+
+    background: rgba(255,37,215,.12);
+}
+
+
+/* =========================================
+   CONTENEDOR
+========================================= */
+
+.contenedor {
+    width: 94%;
+    max-width: 1550px;
+
+    margin: 30px auto 50px;
+}
+
+
+/* =========================================
+   TITULO
+========================================= */
+
+.titulo {
+    text-align: center;
+
+    margin-bottom: 35px;
+}
+
+.emoji {
+    font-size: 48px;
+
+    margin-bottom: 5px;
+
+    filter:
+        drop-shadow(0 0 7px #00eaff)
+        drop-shadow(0 0 12px #ff22d4);
+}
+
+
+h1 {
+    font-size: 64px;
+
+    font-weight: 900;
+
+    letter-spacing: 4px;
+
+    color: #ffffff;
+
+    text-shadow:
+        0 0 5px #00eaff,
+        0 0 15px #00eaff,
+        0 0 30px #7b35ff,
+        0 0 45px #ff22d4;
+}
+
+
+/* TEXTO BAJO TITULO */
+
+.subtitulo {
+    display: inline-block;
+
+    margin-top: 12px;
+
+    padding: 13px 30px;
+
+    border: 2px solid #ff28d7;
+
+    border-radius: 30px;
+
+    background: rgba(12, 7, 40, .75);
+
+    color: white;
+
+    font-size: 17px;
+
+    font-weight: bold;
+
+    box-shadow:
+        0 0 8px #ff28d7,
+        0 0 20px rgba(255,40,215,.55);
+
+    text-shadow:
+        0 0 7px #fff;
+}
+
+
+/* =========================================
+   TARJETAS
+========================================= */
+
+.juegos {
+    display: grid;
+
+    grid-template-columns:
+        repeat(5, 1fr);
+
+    gap: 18px;
+}
+
+
+/* TARJETA */
+
+.juego {
+    position: relative;
+
+    padding: 10px;
+
+    min-height: 460px;
+
+    background:
+        linear-gradient(
+            rgba(7, 5, 25, .93),
+            rgba(4, 3, 18, .96)
+        );
+
+    border: 2px solid;
+
+    border-radius: 13px;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    transition: .3s;
+}
+
+
+/* LÍNEA DE LUZ ARRIBA */
+
+.juego::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 10%;
+
+    width: 80%;
+    height: 2px;
+
+    background: currentColor;
+
+    box-shadow:
+        0 0 8px currentColor,
+        0 0 20px currentColor;
+}
+
+
+/* HOVER */
+
+.juego:hover {
+    transform: translateY(-10px) scale(1.02);
+
+    z-index: 3;
+}
+
+
+/* COLORES */
+
+.juego1 {
+    border-color: #7b35ff;
+    color: #9b6cff;
+
+    box-shadow:
+        0 0 8px #7b35ff,
+        0 0 22px rgba(123,53,255,.35);
+}
+
+.juego2 {
+    border-color: #ff28c8;
+    color: #ff28c8;
+
+    box-shadow:
+        0 0 8px #ff28c8,
+        0 0 22px rgba(255,40,200,.35);
+}
+
+.juego3 {
+    border-color: #ffc400;
+    color: #ffc400;
+
+    box-shadow:
+        0 0 8px #ffc400,
+        0 0 22px rgba(255,196,0,.35);
+}
+
+.juego4 {
+    border-color: #00ffd0;
+    color: #00ffd0;
+
+    box-shadow:
+        0 0 8px #00ffd0,
+        0 0 22px rgba(0,255,208,.35);
+}
+
+.juego5 {
+    border-color: #009dff;
+    color: #009dff;
+
+    box-shadow:
+        0 0 8px #009dff,
+        0 0 22px rgba(0,157,255,.35);
+}
+
+
+/* =========================================
+   ÁREA VISUAL
+========================================= */
+
+.imagen-juego {
+    height: 200px;
+
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    border-radius: 8px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(40,30,100,.8),
+            rgba(3,2,15,.98)
+        );
+
+    border: 1px solid currentColor;
+
+    box-shadow:
+        inset 0 0 25px currentColor;
+}
+
+
+/* NÚMERO */
+
+.numero {
+    position: absolute;
+
+    top: 10px;
+    left: 10px;
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    color: white;
+
+    background: #08061b;
+
+    border: 2px solid currentColor;
+
+    box-shadow:
+        0 0 8px currentColor;
+
+    font-weight: bold;
+
+    z-index: 2;
+}
+
+
+/* CÓDIGO DECORATIVO */
+
+.codigo {
+    position: absolute;
+
+    font-family: monospace;
+
+    font-weight: bold;
+
+    color: currentColor;
+
+    text-shadow:
+        0 0 8px currentColor;
+
+    opacity: .9;
+}
+
+.codigo.a {
+    top: 15px;
+    right: 18px;
+}
+
+.codigo.b {
+    bottom: 15px;
+    left: 18px;
+}
+
+
+/* ICONO */
+
+.icono {
+    font-size: 70px;
+
+    filter:
+        drop-shadow(0 0 8px currentColor)
+        drop-shadow(0 0 18px currentColor);
+
+    animation:
+        flotar 2.5s ease-in-out infinite;
+}
+
+
+/* ANIMACIÓN */
+
+@keyframes flotar {
+
+    0%,100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+
+}
+
+
+/* =========================================
+   TÍTULO DE CADA JUEGO
+========================================= */
+
+.juego h2 {
+    text-align: center;
+
+    margin: 17px 5px 10px;
+
+    font-size: 23px;
+
+    color: white;
+
+    text-shadow:
+        0 0 6px currentColor,
+        0 0 15px currentColor;
+}
+
+
+/* =========================================
+   DESCRIPCIÓN
+========================================= */
+
+.descripcion {
+    color: #d7d3ec;
+
+    text-align: center;
+
+    line-height: 1.5;
+
+    font-size: 14px;
+
+    min-height: 68px;
+
+    padding: 0 8px;
+}
+
+
+/* =========================================
+   BOTÓN JUGAR
+========================================= */
+
+.boton {
+    width: 85%;
+
+    margin:
+        auto auto 8px;
+
+    padding: 13px;
+
+    border-radius: 7px;
+
+    background: transparent;
+
+    color: white;
+
+    border: 2px solid currentColor;
+
+    font-size: 18px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    text-shadow:
+        0 0 7px currentColor;
+
+    box-shadow:
+        0 0 7px currentColor,
+        inset 0 0 8px rgba(255,255,255,.05);
+
+    transition: .25s;
+}
+
+
+.boton:hover {
+    background: currentColor;
+
+    color: #050313;
+
+    text-shadow: none;
+
+    box-shadow:
+        0 0 10px currentColor,
+        0 0 25px currentColor,
+        0 0 45px currentColor;
+
+    transform: scale(1.06);
+}
+
+
+.boton:active {
+    transform: scale(.97);
+}
+
+
+/* =========================================
+   FRASE FINAL
+========================================= */
+
+.frase {
+    margin-top: 35px;
+
+    text-align: center;
+
+    color: white;
+
+    font-weight: bold;
+
+    font-size: 18px;
+
+    letter-spacing: 2px;
+
+    text-shadow:
+        0 0 7px #00eaff,
+        0 0 15px #ff28d7;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1200px) {
+
+    .juegos {
+        grid-template-columns:
+            repeat(3, 1fr);
+    }
+
+}
+
+
+@media (max-width: 750px) {
+
+    nav {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .menu {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    h1 {
+        font-size: 42px;
+    }
+
+    .subtitulo {
+        font-size: 14px;
+    }
+
+    .juegos {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* =====================================================
+   TEMA PASTEL  (reemplaza los negros por colores pastel)
+===================================================== */
+nav{background:rgba(190,176,240,.95);border-color:#8f7bdc;box-shadow:0 0 8px #a898e6,0 0 20px rgba(143,123,220,.55),inset 0 0 20px rgba(255,255,255,.25)}
+.logo{color:#2d2452;text-shadow:0 0 8px rgba(255,255,255,.85)}
+.logo-icon{background:#efe8fd;border-color:#5b9fe0;box-shadow:0 0 8px #93c5f0,inset 0 0 12px rgba(91,159,224,.3)}
+.menu{background:rgba(255,255,255,.38)}
+.menu a{color:#3a2f68;border:1px solid transparent}
+.menu a:hover{color:#2d2452;background:rgba(147,197,240,.6);border-color:#5b9fe0;box-shadow:0 0 8px #93c5f0}
+.menu .activo{color:#2d2452;background:rgba(240,166,210,.8);border-color:#d873b3;box-shadow:0 0 8px #f0a6d2}
+body{background:linear-gradient(rgba(110,92,175,.38),rgba(110,92,175,.52)),url("arcadebckg.jpg.jpeg");background-size:cover;background-position:center;background-attachment:fixed}
+h1{color:#fff;text-shadow:0 0 6px #7a5ce0,0 0 18px #e58fc0,0 3px 0 rgba(58,47,104,.6)}
+
+.subtitulo{background:rgba(242,175,214,.92);color:#2d2452;text-shadow:none;border-color:#d873b3;box-shadow:0 0 8px #f0a6d2,0 0 20px rgba(240,166,210,.5)}
+.juego{background:var(--bg)}
+.juego1{--acc:#6b4fd6;--bg:#c9bcf3;border-color:#8f7bdc;color:#6b4fd6;box-shadow:0 0 8px #a898e6,0 0 22px rgba(143,123,220,.4)}
+.juego2{--acc:#c73a97;--bg:#f4b3d8;border-color:#e07fbb;color:#c73a97;box-shadow:0 0 8px #f0a6d2,0 0 22px rgba(224,127,187,.4)}
+.juego3{--acc:#a86f00;--bg:#f3d98e;border-color:#e0b84a;color:#a86f00;box-shadow:0 0 8px #f0d080,0 0 22px rgba(224,184,74,.4)}
+.juego4{--acc:#1a8f76;--bg:#a0e0cf;border-color:#5cc4a8;color:#1a8f76;box-shadow:0 0 8px #8fd9c3,0 0 22px rgba(92,196,168,.4)}
+.juego5{--acc:#2a72c4;--bg:#a8cff3;border-color:#6aa8e6;color:#2a72c4;box-shadow:0 0 8px #93c5f0,0 0 22px rgba(106,168,230,.4)}
+.imagen-juego{background:radial-gradient(circle,rgba(255,255,255,.8),rgba(255,255,255,.32));border:1px solid var(--acc);box-shadow:inset 0 0 25px rgba(255,255,255,.45)}
+.numero{background:#fff;color:#2d2452;border:2px solid var(--acc);box-shadow:0 0 8px var(--acc)}
+.codigo{text-shadow:none}
+.icono {
+    width: 125px;
+    height: 125px;
+    object-fit: contain;
+    filter: drop-shadow(0 3px 6px rgba(45,36,82,.35));
+    animation: flotar 2.5s ease-in-out infinite;
+}
+.juego h2{color:#2d2452;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+.descripcion{color:#2d2452}
+.boton{color:#2d2452;background:rgba(255,255,255,.5);text-shadow:none;border:2px solid var(--acc);box-shadow:0 0 7px var(--acc)}
+.boton:hover{background:var(--acc);color:#fff;box-shadow:0 0 10px var(--acc),0 0 25px var(--acc)}
+.frase{color:#fff;text-shadow:0 1px 6px rgba(45,36,82,.9)}
+.emoji{filter:drop-shadow(0 0 6px #fff)}
+
+</style>
+</head>
+
+
+<body>
+
+
+<!-- =========================================
+     NAVBAR
+========================================= -->
+
+<nav>
+
+    <div class="logo">
+
+        <div class="logo-icon">
+            🎮
+        </div>
+
+        Mini Arcade
+
+    </div>
+
+
+    <div class="menu">
+
+        <a href="portada.html">
+            🏠 Inicio
+        </a>
+
+        <a href="juegoportada.html"
+           class="activo">
+
+            🎮 Juegos
+
+        </a>
+
+        <a href="guia.html">
+            📖 Guía
+        </a>
+
+        <a href="records.html">
+            🏆 Récords
+        </a>
+
+    </div>
+
+</nav>
+
+
+
+<!-- =========================================
+     CONTENIDO
+========================================= -->
+
+<main class="contenedor">
+
+
+    <!-- TITULO -->
+
+    <section class="titulo">
+
+        <h1>
+            MINI ARCADE
+        </h1>
+
+        <div class="subtitulo">
+
+            ♥ ELIGE UN JUEGO Y DEMUESTRA
+            TUS HABILIDADES ♥
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         JUEGOS
+    ========================================= -->
+
+    <section class="juegos">
+
+
+        <!-- =====================================
+             JUEGO 1
+        ====================================== -->
+
+        <article class="juego juego1">
+
+            <div class="imagen-juego">
+
+                <span class="numero">
+                    1
+                </span>
+
+                <span class="codigo a">
+                    &lt;if&gt;
+                </span>
+
+                <span class="codigo b">
+                    var
+                </span>
+
+               <img class="icono" src="juego1.png" alt="Atrapa el código">
+
+            </div>
+
+
+            <h2>
+                ATRAPA EL CÓDIGO
+            </h2>
+
+
+            <p class="descripcion">
+
+                Atrapa los bloques de código
+                correctos antes de que
+                lleguen al suelo.
+
+            </p>
+
+
+            <button
+                class="boton"
+                onclick="irJuego('atrapa.html')">
+
+                ▶ JUGAR
+
+            </button>
+
+        </article>
+
+
+
+        <!-- =====================================
+             JUEGO 2
+        ====================================== -->
+
+        <article class="juego juego2">
+
+            <div class="imagen-juego">
+
+                <span class="numero">
+                    2
+                </span>
+
+                <span class="codigo a">
+                    &lt;/&gt;
+                </span>
+
+                <span class="codigo b">
+                    0101
+                </span>
+
+                <img class="icono" src="juego2.png" alt="Bug Hunter">
+
+            </div>
+
+
+            <h2>
+                BUG HUNTER
+            </h2>
+
+
+            <p class="descripcion">
+
+                Encuentra el error en el
+                código y haz clic en la
+                línea correcta.
+
+            </p>
+
+
+            <button
+                class="boton"
+                onclick="irJuego('bug.html')">
+
+                ▶ JUGAR
+
+            </button>
+
+        </article>
+
+
+
+        <!-- =====================================
+             JUEGO 3
+        ====================================== -->
+
+        <article class="juego juego3">
+
+            <div class="imagen-juego">
+
+                <span class="numero">
+                    3
+                </span>
+
+                <span class="codigo a">
+                    ?
+                </span>
+
+                <span class="codigo b">
+                    2 + 3
+                </span>
+
+                <img class="icono" src="juego3.png" alt="Soporte Rápido">
+            </div>
+
+
+            <h2>
+                SOPORTE RÁPIDO
+            </h2>
+
+
+            <p class="descripcion">
+
+                Responde preguntas sobre 
+                soporte técnico antes de 
+                que se acabe el tiempo.
+
+            </p>
+
+
+            <button
+                class="boton"
+                onclick="irJuego('rapido.html')">
+
+                ▶ JUGAR
+
+            </button>
+
+        </article>
+
+
+
+        <!-- =====================================
+             JUEGO 4
+        ====================================== -->
+
+        <article class="juego juego4">
+
+            <div class="imagen-juego">
+
+                <span class="numero">
+                    4
+                </span>
+
+                <span class="codigo a">
+                    ↑ ↓
+                </span>
+
+                <span class="codigo b">
+                    { }
+                </span>
+
+                <img class="icono" src="juego4.png" alt="Ordena el código">
+            </div>
+
+
+            <h2>
+                ORDENA EL CÓDIGO
+            </h2>
+
+
+            <p class="descripcion">
+
+                Coloca las líneas de código
+                en el orden correcto.
+
+            </p>
+
+
+            <button
+                class="boton"
+                onclick="irJuego('ordena.html')">
+
+                ▶ JUGAR
+
+            </button>
+
+        </article>
+
+
+
+        <!-- =====================================
+             JUEGO 5
+        ====================================== -->
+
+        <article class="juego juego5">
+
+            <div class="imagen-juego">
+
+                <span class="numero">
+                    5
+                </span>
+
+                <span class="codigo a">
+                    &lt;/&gt;
+                </span>
+
+                <span class="codigo b">
+                    { }
+                </span>
+
+                <img class="icono" src="juego5.png" alt="Programmer Space">
+
+            </div>
+
+
+            <h2>
+                PROGRAMMER SPACE
+            </h2>
+
+
+            <p class="descripcion">
+
+                Responde preguntas de
+                programación y destruye
+                los obstáculos.
+
+            </p>
+
+
+            <button
+                class="boton"
+                onclick="irJuego('space.html')">
+
+                ▶ JUGAR
+
+            </button>
+
+        </article>
+
+
+    </section>
+
+
+
+    <!-- FRASE -->
+
+    <div class="frase">
+
+        ♥ ━━━━━
+        PEQUEÑOS RETOS
+        ✦
+        GRANDES PROGRAMADORES
+        ━━━━━ ♥
+
+    </div>
+
+
+</main>
+
+
+
+<script>
+
+function irJuego(pagina) {
+
+    window.location.href = pagina;
+
+}
+
+</script>
+
+
+<!-- Música de fondo (necesita musica.js y musica.mp3 en la misma carpeta) -->
+<script src="musica.js"></script>
+
+</body>
+
+</html>

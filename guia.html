@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Arcade | Guía</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,Helvetica,sans-serif;color:#fff;min-height:100vh;
+  background:linear-gradient(rgba(5,3,20,.72),rgba(5,3,20,.82)),url("arcadebckg.jpg.jpeg");
+  background-size:cover;background-position:center;background-attachment:fixed;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background:radial-gradient(circle at 15% 30%,rgba(0,238,255,.15),transparent 25%),
+  radial-gradient(circle at 85% 20%,rgba(255,0,180,.18),transparent 25%),
+  radial-gradient(circle at 50% 80%,rgba(110,0,255,.18),transparent 30%)}
+
+/* NAVEGACIÓN */
+nav{width:94%;margin:18px auto;min-height:72px;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 25px;background:rgba(7,5,30,.9);border:2px solid #513dff;border-radius:18px;
+  box-shadow:0 0 8px #513dff,0 0 20px rgba(81,61,255,.7),inset 0 0 20px rgba(81,61,255,.15);backdrop-filter:blur(8px)}
+.logo{display:flex;align-items:center;gap:12px;font-size:25px;font-weight:bold;text-shadow:0 0 5px #00eaff,0 0 15px #00eaff}
+.logo-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;
+  background:#11102b;border:2px solid #00eaff;box-shadow:0 0 8px #00eaff,inset 0 0 12px rgba(0,234,255,.25)}
+.menu{display:flex;gap:7px;background:rgba(0,0,0,.35);padding:6px;border-radius:13px}
+.menu a{color:#ddd9ff;text-decoration:none;padding:12px 17px;border-radius:10px;font-weight:bold;
+  border:1px solid transparent;transition:.25s}
+.menu a:hover{color:#fff;border-color:#00eaff;box-shadow:0 0 8px #00eaff,0 0 20px rgba(0,234,255,.5);background:rgba(0,234,255,.08)}
+.menu .activo{color:#fff;border-color:#ff25d7;box-shadow:0 0 8px #ff25d7,0 0 20px rgba(255,37,215,.6);background:rgba(255,37,215,.12)}
+
+/* CONTENIDO */
+.wrap{width:94%;max-width:1200px;margin:30px auto 90px}
+.titulo{text-align:center;margin-bottom:35px}
+.emoji{font-size:48px;margin-bottom:5px;filter:drop-shadow(0 0 7px #00eaff) drop-shadow(0 0 12px #ff22d4)}
+h1{font-size:60px;font-weight:900;letter-spacing:4px;
+  text-shadow:0 0 5px #00eaff,0 0 15px #00eaff,0 0 30px #7b35ff,0 0 45px #ff22d4}
+.sub{display:inline-block;margin-top:12px;padding:13px 30px;border:2px solid #ff28d7;border-radius:30px;
+  background:rgba(12,7,40,.75);font-weight:bold;box-shadow:0 0 8px #ff28d7,0 0 20px rgba(255,40,215,.55)}
+.panel{background:rgba(7,5,25,.93);border:2px solid #513dff;border-radius:14px;padding:24px 28px;margin-bottom:26px;
+  box-shadow:0 0 12px rgba(81,61,255,.55)}
+h2{font-size:24px;margin-bottom:14px;text-shadow:0 0 8px #00eaff}
+.pasos{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.pasos li{padding:16px;border-radius:12px;background:rgba(0,0,0,.35);border:1px solid rgba(0,234,255,.35);line-height:1.5;color:#ddd9ff}
+.pasos b{display:block;color:#fff;font-size:18px;margin-bottom:4px}
+.juegos{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px;margin-bottom:26px}
+.juego{--c:#7b35ff;background:linear-gradient(rgba(7,5,25,.93),rgba(4,3,18,.96));border:2px solid var(--c);
+  border-radius:14px;padding:20px 22px;box-shadow:0 0 10px var(--c),inset 0 0 18px rgba(255,255,255,.03)}
+.juego h3{font-size:22px;margin-bottom:12px;color:#fff;text-shadow:0 0 8px var(--c)}
+.juego p{line-height:1.55;color:#ddd9ff;margin-bottom:10px}
+.juego p b{color:var(--c)}
+.aviso{text-align:center;line-height:1.6;color:#ddd9ff}
+.ir{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.ir a{color:#fff;text-decoration:none;font-weight:bold;padding:13px 26px;border-radius:12px;border:2px solid #00eaff;
+  background:rgba(0,234,255,.1);box-shadow:0 0 8px #00eaff;transition:.25s}
+.ir a:hover{background:rgba(0,234,255,.25)}
+.ir a.rosa{border-color:#ff25d7;background:rgba(255,37,215,.12);box-shadow:0 0 8px #ff25d7}
+@media(max-width:860px){
+  nav{flex-direction:column;gap:10px}.menu{flex-wrap:wrap;justify-content:center}
+  h1{font-size:40px}.pasos{grid-template-columns:1fr}.juegos{grid-template-columns:1fr}
+}
+
+/* =====================================================
+   TEMA PASTEL  (reemplaza los negros por colores pastel)
+===================================================== */
+nav{background:rgba(190,176,240,.95);border-color:#8f7bdc;box-shadow:0 0 8px #a898e6,0 0 20px rgba(143,123,220,.55),inset 0 0 20px rgba(255,255,255,.25)}
+.logo{color:#2d2452;text-shadow:0 0 8px rgba(255,255,255,.85)}
+.logo-icon{background:#efe8fd;border-color:#5b9fe0;box-shadow:0 0 8px #93c5f0,inset 0 0 12px rgba(91,159,224,.3)}
+.menu{background:rgba(255,255,255,.38)}
+.menu a{color:#3a2f68;border:1px solid transparent}
+.menu a:hover{color:#2d2452;background:rgba(147,197,240,.6);border-color:#5b9fe0;box-shadow:0 0 8px #93c5f0}
+.menu .activo{color:#2d2452;background:rgba(240,166,210,.8);border-color:#d873b3;box-shadow:0 0 8px #f0a6d2}
+body{background:linear-gradient(rgba(110,92,175,.38),rgba(110,92,175,.52)),url("arcadebckg.jpg.jpeg");background-size:cover;background-position:center;background-attachment:fixed}
+h1{color:#fff;text-shadow:0 0 6px #7a5ce0,0 0 18px #e58fc0,0 3px 0 rgba(58,47,104,.6)}
+
+.sub{background:rgba(242,175,214,.92);color:#2d2452;text-shadow:none;border-color:#d873b3;box-shadow:0 0 8px #f0a6d2,0 0 20px rgba(240,166,210,.5)}
+.panel{background:rgba(198,184,244,.95);border-color:#8f7bdc;color:#2d2452;box-shadow:0 0 12px rgba(143,123,220,.5)}
+h2{color:#2d2452;text-shadow:none}
+.pasos li{background:rgba(255,255,255,.42);border:1px solid rgba(91,159,224,.6);color:#3a2f68}
+.pasos b{color:#2d2452}
+.juego{background:var(--bg);box-shadow:0 0 10px var(--c),inset 0 0 18px rgba(255,255,255,.25)}
+.juego h3{color:#2d2452;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+.juego p{color:#2d2452}
+.juego p b{color:var(--c)}
+.aviso{color:#2d2452}
+.ir a{color:#2d2452;background:rgba(147,197,240,.6);border-color:#5b9fe0;box-shadow:0 0 8px #93c5f0}
+.ir a:hover{background:rgba(147,197,240,.95)}
+.ir a.rosa{background:rgba(240,166,210,.75);border-color:#d873b3;box-shadow:0 0 8px #f0a6d2}
+.ir a.rosa:hover{background:#f0a6d2}
+.emoji{filter:drop-shadow(0 0 6px #fff)}
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><div class="logo-icon">🎮</div>Mini Arcade</div>
+  <div class="menu">
+    <a href="portada.html">🏠 Inicio</a>
+    <a href="juegoportada.html">🎮 Juegos</a>
+    <a href="guia.html" class="activo">📖 Guía</a>
+    <a href="records.html">🏆 Récords</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <section class="titulo">
+    <h1>GUÍA</h1>
+    <div class="sub">♥ APRENDE A JUGAR EN UN MINUTO ♥</div>
+  </section>
+
+  <section class="panel">
+    <h2>Cómo funciona el arcade</h2>
+    <ol class="pasos">
+      <li><b>1. Elige un juego</b>Entra a la sección Juegos y pulsa JUGAR en el que más te guste.</li>
+      <li><b>2. Suma puntos</b>Cada acierto suma. Lee bien antes de responder: la velocidad ayuda, pero acertar es lo que cuenta.</li>
+      <li><b>3. Guarda tu nombre</b>Regístralo en Récords para aparecer en la lista de mejores puntajes.</li>
+    </ol>
+  </section>
+
+  <section class="juegos">
+
+    <article class="juego" style="--c:#6b4fd6;--bg:#c9bcf3">
+      <h4> JUEGO 1</h4>
+      <h3>🤖 Atrapa el código</h3>
+      <p><b>Objetivo:</b> atrapar los bloques de código correctos antes de que lleguen al suelo.</p>
+      <p><b>Cómo se juega:</b> los bloques caen desde arriba. Fíjate en cuál es el correcto y atrápalo a tiempo.</p>
+      <p><b>Consejo:</b> lee el bloque completo antes de moverte; atrapar el equivocado no te acerca al récord.</p>
+    </article>
+
+    <article class="juego" style="--c:#c73a97;--bg:#f4b3d8">
+      <h4> JUEGO 2</h4>
+      <h3>🐞 Bug Hunter</h3>
+      <p><b>Objetivo:</b> encontrar el error escondido en un fragmento de código.</p>
+      <p><b>Cómo se juega:</b> lee el código y haz clic en la línea que tiene el error.</p>
+      <p><b>Consejo:</b> revisa primero lo típico: paréntesis, comillas, punto y coma y nombres de variables mal escritos.</p>
+    </article>
+
+    <article class="juego" style="--c:#a86f00;--bg:#f3d98e">
+      <h4> JUEGO 3</h4>
+      <h3>⏱️ Soporte rápido</h3>
+      <p><b>Objetivo:</b> responder preguntas de soporte técnico antes de que se acabe el tiempo.</p>
+      <p><b>Cómo se juega:</b> aparece una pregunta con un contador. Elige la respuesta correcta antes de que llegue a cero.</p>
+      <p><b>Consejo:</b> si dudas, descarta primero las opciones que sabes que están mal.</p>
+    </article>
+
+    <article class="juego" style="--c:#1a8f76;--bg:#a0e0cf">
+      <h4> JUEGO 4</h4>
+      <h3>🧩 Ordena el código</h3>
+      <p><b>Objetivo:</b> colocar las líneas de código en el orden correcto.</p>
+      <p><b>Cómo se juega:</b> las líneas aparecen desordenadas. Muévelas hasta que el programa tenga sentido de principio a fin.</p>
+      <p><b>Consejo:</b> empieza por la línea que inicia el programa y termina por la que cierra o muestra el resultado.</p>
+    </article>
+
+    <article class="juego" style="--c:#2a72c4;--bg:#a8cff3">
+      <h4> JUEGO 5</h4>
+      <h3>🚀 Programmer Space</h3>
+      <p><b>Objetivo:</b> destruir los obstáculos respondiendo preguntas de programación.</p>
+      <p><b>Cómo se juega:</b> responde bien para despejar el camino de tu nave y seguir avanzando.</p>
+      <p><b>Consejo:</b> con calma: una respuesta correcta vale más que diez apuradas.</p>
+    </article>
+
+  </section>
+
+  <section class="panel aviso">
+    <p>🎵 La música de fondo se controla con el botón de la esquina inferior derecha: puedes pausarla o bajar el volumen cuando quieras.</p>
+    <div class="ir">
+      <a href="juegoportada.html">🎮 Ir a los juegos</a>
+      <a href="records.html" class="rosa">🏆 Ver récords</a>
+    </div>
+  </section>
+
+</main>
+
+<!-- Música de fondo (necesita musica.js y musica.mp3 en la misma carpeta) -->
+<script src="musica.js"></script>
+</body>
+</html>

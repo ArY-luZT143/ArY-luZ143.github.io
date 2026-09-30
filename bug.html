@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bug Hunter</title>
+<style>
+:root{--mg:#d63a9f;--cy:#3b8fe0;--li:#2e9e5b;--ye:#c98a00;--pu:#8b5cf6;--rd:#ff4d6d}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{min-height:100vh;color:#fff;font-family:"Segoe UI",system-ui,sans-serif;padding:0;background:radial-gradient(ellipse at 50% 0,#f0c4e4,#a99be0 65%);overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;background:repeating-linear-gradient(0deg,#ffffff07 0 1px,transparent 1px 4px);pointer-events:none}
+.fl{position:fixed;top:0;font:700 20px Consolas,monospace;opacity:.15;pointer-events:none;animation:sube linear infinite}
+@keyframes sube{from{transform:translateY(105vh)}to{transform:translateY(-15vh)}}
+html{font-size:clamp(16px,1.1vw + 9px,24px)}
+#juego{width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;padding:12px;position:relative;z-index:1;max-width:none}
+.hud,.ayuda{width:100%;max-width:760px;margin-left:auto;margin-right:auto}
+.overlay>*{max-width:640px}
+h2{margin:0 0 10px;text-align:center;font-size:1.7rem;letter-spacing:2px;background:linear-gradient(90deg,var(--mg),var(--ye),var(--cy));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px var(--mg))}
+.hud{display:flex;gap:6px;margin-bottom:8px;font-weight:700;font-size:.75rem}
+.chip{flex:1;text-align:center;padding:5px 4px;border-radius:10px;border:2px solid;background:#0d0a20;white-space:nowrap}
+.c1{border-color:var(--cy);color:var(--cy);box-shadow:0 0 10px var(--cy),inset 0 0 8px #3b8fe044}
+.c2{border-color:var(--mg);color:var(--mg);box-shadow:0 0 10px var(--mg),inset 0 0 8px #d63a9f44;letter-spacing:2px}
+.c3{border-color:var(--li);color:var(--li);box-shadow:0 0 10px var(--li),inset 0 0 8px #2e9e5b44}
+.c4{border-color:var(--ye);color:var(--ye);box-shadow:0 0 10px var(--ye),inset 0 0 8px #c98a0044}
+.stage{position:relative;flex:1;min-height:0;display:flex;border-radius:18px;padding:3px;isolation:isolate}
+.stage::before{content:"";position:absolute;inset:0;border-radius:18px;z-index:-1;background:linear-gradient(135deg,var(--mg),var(--pu),var(--cy),var(--ye));box-shadow:0 0 28px #d63a9f77,0 0 60px #3b8fe044;animation:giro 6s linear infinite}
+@keyframes giro{to{filter:hue-rotate(360deg)}}
+.stage::after{content:"0101";position:absolute;right:16px;bottom:8px;font:700 12px Consolas,monospace;color:var(--mg);text-shadow:0 0 8px var(--mg)}
+.panel{flex:1;min-width:0;overflow-y:auto;display:flex;flex-direction:column;background:#0b0818;border-radius:15px;padding:14px max(14px,calc((100% - 760px)/2)) 30px}
+.panel>:first-child{margin-top:auto}
+.panel>:last-child{margin-bottom:auto}
+.tema{text-align:center;font-size:.9rem;color:#e2dcff;margin-bottom:8px}
+.tema b{color:var(--cy);text-shadow:0 0 8px var(--cy)}
+.barra{height:10px;border-radius:6px;background:#1b1240;border:1px solid var(--pu);overflow:hidden;margin-bottom:12px}
+.barra i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--cy),var(--li));box-shadow:0 0 10px var(--cy)}
+.barra i.bajo{background:linear-gradient(90deg,var(--rd),var(--mg));box-shadow:0 0 10px var(--rd)}
+.win{border:2px solid var(--mg);border-radius:12px;background:#120a2e;box-shadow:0 0 14px #d63a9f55;overflow:hidden}
+.wb{display:flex;gap:6px;align-items:center;padding:6px 10px;background:#1b1240;font:600 .75rem Consolas,monospace;color:#a59fc9}
+.wb b{width:10px;height:10px;border-radius:50%;background:var(--rd)}
+.wb b:nth-child(2){background:var(--ye)}.wb b:nth-child(3){background:var(--li)}
+.wb span{margin-left:8px}
+#lines{overflow-x:auto;padding:6px 0}
+.ln{display:flex;gap:12px;width:100%;text-align:left;padding:9px 12px;background:transparent;border:0;border-left:3px solid transparent;border-radius:0;box-shadow:none;text-shadow:none;font:600 .95rem Consolas,monospace;color:#f3eaff;cursor:pointer}
+.ln .n{color:#7d74a8;min-width:1.2em;text-align:right}
+.ln code{font:inherit;white-space:pre}
+.ln:hover{background:#d63a9f22;border-left-color:var(--mg)}
+#lines.hecho .ln{pointer-events:none}
+.ln.bug{background:#2e9e5b22;border-left-color:var(--li);color:#eaffc4}
+.ln.mal{background:#ff4d6d33;border-left-color:var(--rd)}
+.fb{min-height:150px;margin-top:12px;font-size:.9rem;line-height:1.4;color:#e2dcff}
+.fb p{margin:6px 0 10px}
+.fb b.ok{color:var(--li);text-shadow:0 0 8px var(--li);font-size:1.05rem}
+.fb b.mal{color:var(--rd);text-shadow:0 0 8px var(--rd);font-size:1.05rem}
+button{font:inherit;font-weight:800;font-size:1.05rem;color:#fff;background:#150e33;border:2px solid #fff;border-radius:12px;padding:10px 30px;cursor:pointer;box-shadow:0 0 12px var(--mg),0 0 26px var(--cy),inset 0 0 10px #8b5cf688;text-shadow:0 0 8px #fff}
+button:hover{background:#2a1a5e}
+button:focus-visible{outline:3px solid var(--ye);outline-offset:3px}
+.ln{padding:9px 12px;font-size:.95rem;font-weight:600}
+.mute{position:absolute;top:0;right:0;padding:4px 10px;font-size:1rem;border-radius:10px;box-shadow:0 0 10px var(--cy)}
+.overlay{position:absolute;inset:3px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;padding:24px;text-align:center;background:#07060fee;border-radius:15px;z-index:3}
+.overlay.oculto{display:none}
+.overlay.fin{justify-content:flex-start;overflow-y:auto}
+.overlay.fin .tags{display:none}
+.overlay h1{margin:0;font-size:2rem;text-shadow:0 0 6px #fff,0 0 18px var(--mg),0 0 32px var(--cy)}
+.overlay p{margin:0;color:#e2dcff;line-height:1.4}
+.tags{font:700 .9rem Consolas,monospace;display:flex;gap:14px}
+.tags span:nth-child(1){color:var(--mg)}.tags span:nth-child(2){color:var(--cy)}.tags span:nth-child(3){color:var(--li)}.tags span:nth-child(4){color:var(--ye)}
+.rep{width:100%;text-align:left;display:flex;flex-direction:column;gap:10px}
+.rt{margin:6px 0 0;font-size:1.05rem;color:var(--ye);text-shadow:0 0 8px var(--ye)}
+.grupo{border:2px solid var(--mg);border-radius:12px;padding:10px 12px;background:#120a2e;box-shadow:0 0 10px #d63a9f55}
+.grupo h3{margin:0 0 4px;font-size:1rem;color:var(--cy);text-shadow:0 0 8px var(--cy)}
+.def{margin:0 0 6px;font-size:.85rem;line-height:1.4}
+.err{border-left:3px solid var(--mg);padding-left:8px;margin-top:8px;font-size:.85rem;line-height:1.4}
+.err code{display:block;color:var(--ye);font-family:Consolas,monospace;font-size:.95rem;margin-bottom:2px}
+.err .q{color:#ff8fe8;font-weight:700}
+.ayuda{margin-top:8px;font-size:.8rem;color:#a59fc9;text-align:center}
+.full{right:auto;left:0}
+@media (prefers-reduced-motion:reduce){.stage::before,.fl{animation:none}}
+
+/* ===== TEMA PASTEL ===== */
+body{color:#2d2452}
+body::before{background:repeating-linear-gradient(0deg,#ffffff18 0 1px,transparent 1px 4px)}
+.fl{opacity:.35}
+.chip{background:#e9defa}
+.panel{background:#c9bcf3}
+.tema{color:#3a2f68}
+.barra{background:#e9defa}
+.win{background:#efe6fb}
+.wb{background:#b8a9ec;color:#3a2f68}
+.ln{color:#2d2452}
+.ln .n{color:#6a5f9a}
+.ln.bug{background:rgba(46,158,91,.28);color:#1f5a3a}
+.fb{color:#2d2452}
+.overlay{background:rgba(198,184,244,.97)}
+.overlay p{color:#2d2452}
+.overlay h1{color:#2d2452;text-shadow:0 0 8px #fff,0 0 18px #f0a6d2}
+.tags span:nth-child(1){color:#b02c86}.tags span:nth-child(2){color:#2a5fa8}.tags span:nth-child(3){color:#1a7f5f}.tags span:nth-child(4){color:#8a5a00}
+button,a.menu-link,a.volver{font:inherit;font-weight:800;font-size:1.05rem;color:#2d2452;background:#f5b5da;border:2px solid #8f7bdc;border-radius:12px;padding:10px 30px;cursor:pointer;text-decoration:none;box-shadow:0 0 12px #f0a6d2,0 0 22px rgba(147,197,240,.7);text-shadow:none}
+button:hover,a.menu-link:hover,a.volver:hover{background:#f0a0d0}
+.ln,.ln:hover{border-radius:0}
+.ln{background:transparent;border:0;border-left:3px solid transparent;box-shadow:none;padding:9px 12px}
+.ln:hover{background:rgba(214,58,159,.15);border-left-color:var(--mg)}
+.ln.bug{border-left-color:var(--li)}
+.ln.mal{background:rgba(214,48,79,.25);border-left-color:var(--rd)}
+a.menu-link{background:#a8cff3;font-size:1rem;padding:10px 28px}
+a.menu-link:hover{background:#93c5f0}
+.mute{padding:4px 10px;font-size:1rem}
+a.volver{position:absolute;top:0;left:54px;padding:4px 12px;font-size:.8rem;border-radius:10px;line-height:1.5;z-index:5;background:#a8cff3}
+a.volver:hover{background:#93c5f0}
+.ayuda{color:#3a2f68}
+.grupo{background:#efe6fb}
+.def,.err{color:#2d2452}
+.err .q{color:#b02c86}
+.err code{color:#8a5a00}
+.rt{color:#8a5a00;text-shadow:none}
+.grupo h3{color:#2a5fa8;text-shadow:none}
+.stage::after{color:#2d2452;text-shadow:none}
+h2{background:linear-gradient(90deg,#4b34b8,#b52d8a,#8a5a00);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 0 6px rgba(255,255,255,.7))}
+@media(max-width:520px){h2{margin-top:36px}}
+
+</style>
+</head>
+<script src="arcade-records.js"></script>
+<body>
+<main id="juego">
+  <button id="mute" class="mute" aria-label="Activar o quitar sonido">🔊</button>
+  <button id="full" class="mute full" aria-label="Pantalla completa">⛶</button>
+  <a id="volver" class="volver" href="juegoportada.html" aria-label="Volver al menú de juegos">⬅ Menú de juegos</a>
+  <h2>BUG HUNTER</h2>
+  <div class="hud">
+    <span class="chip c1">RONDA <span id="ron">0/10</span></span>
+    <span class="chip c2" id="vidas" aria-label="Vidas"></span>
+    <span class="chip c3">PUNTOS <span id="pts">0</span></span>
+    <span class="chip c4">RÉCORD <span id="rec">0</span></span>
+  </div>
+  <div class="stage">
+    <div class="panel">
+      <div class="tema" id="tema">Tema: <b>HTML básico</b></div>
+      <div class="barra"><i id="barra"></i></div>
+      <div class="win">
+        <div class="wb"><b></b><b></b><b></b><span>index.html</span></div>
+        <div id="lines"></div>
+      </div>
+      <div class="fb" id="fb"></div>
+    </div>
+    <div class="overlay" id="ov">
+      <div class="tags"><span>&lt;/&gt;</span><span>0101</span><span>bug</span><span>404</span></div>
+      <h1 id="ovT">BUG HUNTER</h1>
+      <p id="ovP">Encuentra el error en el código y haz clic en la línea correcta. Tienes 20 segundos por ronda y 3 vidas.</p>
+      <button id="btn">▶ JUGAR</button>
+      <a class="menu-link" href="juegoportada.html">🎮 MENÚ DE JUEGOS</a>
+      <div class="rep" id="rep"></div>
+    </div>
+  </div>
+  <div class="ayuda">Haz clic (o toca) la línea que tiene el error</div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const NEON = ['#4a86dc', '#d24aa8', '#3ea87f', '#d59a1c', '#8a6ae0', '#e07a3a'];
+const RONDAS = 10, TIEMPO = 20;
+
+const Sound = (() => {
+  let ac, master, noise, timer, nextT = 0, step = 0, on = true;
+  const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+  const BASS = [50, 46, 53, 48];
+  const ARP = [[74, 77, 81], [70, 74, 77], [72, 77, 81], [72, 76, 79]];
+  function init() {
+    if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+    const A = window.AudioContext || window.webkitAudioContext;
+    if (!A) return;
+    ac = new A(); master = ac.createGain(); master.gain.value = 0.35; master.connect(ac.destination);
+    noise = ac.createBuffer(1, ac.sampleRate * 0.2, ac.sampleRate);
+    const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  const rd = () => { if (!on) return false; init(); return !!ac; };
+  function tone(f, t, dur, type, vol, f2) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
+  }
+  function hat(t, vol) {
+    const s = ac.createBufferSource(), h = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noise; h.type = 'highpass'; h.frequency.value = 7000;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    s.connect(h); h.connect(g); g.connect(master); s.start(t); s.stop(t + 0.06);
+  }
+  function sched() {
+    while (nextT < ac.currentTime + 0.15) {
+      const bar = Math.floor(step / 16) % 4, i = step % 16;
+      if (i % 4 === 0) tone(150, nextT, 0.15, 'sine', 0.7, 40);
+      if (i % 2 === 1) hat(nextT, 0.15);
+      if (i % 4 === 0 || i % 8 === 6) tone(mtof(BASS[bar] - 12 + (i % 8 === 6 ? 12 : 0)), nextT, 0.22, 'sawtooth', 0.22);
+      tone(mtof(ARP[bar][[0, 2, 1, 2][i % 4]]), nextT, 0.1, 'square', 0.06);
+      nextT += 0.16; step++;
+    }
+  }
+  document.addEventListener('visibilitychange', () => { if (ac) document.hidden ? ac.suspend() : ac.resume(); });
+  return {
+    music() { if (!rd()) return; clearInterval(timer); step = 0; nextT = ac.currentTime + 0.1; timer = setInterval(sched, 25); },
+    stop() { clearInterval(timer); },
+    ok() { if (!rd()) return; const t = ac.currentTime; tone(660, t, .08, 'square', .18); tone(990, t + .07, .12, 'square', .18); },
+    bad() { if (!rd()) return; tone(220, ac.currentTime, .3, 'sawtooth', .25, 80); },
+    win() { if (!rd()) return; const t = ac.currentTime; [523, 659, 784, 1046].forEach((f, k) => tone(f, t + k * .1, .18, 'triangle', .25)); },
+    over() { if (!rd()) return; const t = ac.currentTime; [392, 330, 262, 196].forEach((f, k) => tone(f, t + k * .18, .28, 'triangle', .3)); },
+    set(v) { on = v; $('mute').textContent = on ? '🔊' : '🔇'; if (!on) clearInterval(timer); },
+    get on() { return on; }
+  };
+})();
+
+const TEMAS = {
+  e: { n: 'Etiquetas básicas', d: 'Una etiqueta HTML es una palabra entre < > que le dice al navegador qué tipo de contenido mostrar. Casi siempre se abre <p> y se cierra </p>.' },
+  l: { n: 'Enlaces e imágenes', d: 'Un enlace (<a>) lleva a otra página usando href. Una imagen (<img>) muestra una foto usando src y un texto alternativo alt.' },
+  i: { n: 'Listas', d: 'Una lista agrupa elementos. <ul> crea viñetas, <ol> números, y cada elemento va dentro de <li>.' },
+  s: { n: 'Estructura de la página', d: 'Toda página HTML se organiza dentro de <html>, con <head> (información como el título) y <body> (lo que se ve en pantalla).' },
+  f: { n: 'Formato de texto', d: 'Estas etiquetas cambian cómo se ve el texto: <strong> para negrita, <em> para cursiva, <br> para saltar de línea y <hr> para una línea divisoria.' },
+  c: { n: 'Contenedores', d: 'Un contenedor agrupa otras etiquetas para organizarlas: <div> es una caja general, <span> agrupa texto dentro de una línea, y <header> y <footer> son la parte de arriba y de abajo.' }
+};
+
+// [tema, líneas, índice de la línea con el error, explicación]
+const PUZ = [
+  ['e', ['<h1>Mi página</h1>', '<p>Hola a todos</p>', '<p>Bienvenidos<p>', '<h2>Contacto</h2>'], 2, 'Falta cerrar el párrafo: debe terminar con </p>.'],
+  ['e', ['<h1>Título</h1>', '<p>Primer texto</p>', '<h2>Subtítulo</h3>', '<p>Segundo texto</p>'], 2, 'La etiqueta de cierre no coincide: se abrió h2 y se cerró h3.'],
+  ['e', ['<h1>Animales</h1>', '<p>El gato duerme</p>', '<h7>Perros</h7>', '<p>Ladran mucho</p>'], 2, 'Los títulos solo llegan hasta h6; h7 no existe.'],
+  ['e', ['<h1>Hola</h1>', '<p>Bienvenido</p>', '<p Adiós</p>', '<p>Gracias</p>'], 2, 'Falta el signo > para cerrar la etiqueta de apertura.'],
+  ['l', ['<h1>Mis enlaces</h1>', '<a href="inicio.html">Inicio</a>', '<a src="fotos.html">Fotos</a>', '<a href="hola.html">Hola</a>'], 2, 'El enlace usa href, no src.'],
+  ['l', ['<h1>Galería</h1>', '<img src="sol.png" alt="Sol">', '<img href="luna.png" alt="Luna">', '<img src="mar.png" alt="Mar">'], 2, 'La imagen usa src, no href.'],
+  ['l', ['<p>Visita mi web:</p>', '<a href="web.html">Entrar', '<p>Gracias</p>', '<p>Adiós</p>'], 1, 'Falta cerrar el enlace con </a>.'],
+  ['l', ['<a href="uno.html">Uno</a>', '<a href="dos.html>Dos</a>', '<a href="tres.html">Tres</a>'], 1, 'Falta cerrar las comillas después de dos.html.'],
+  ['l', ['<h1>Foto</h1>', '<image src="gato.png" alt="Gato">', '<p>Mi gato</p>'], 1, 'La etiqueta correcta es img, no image.'],
+  ['i', ['<ul>', '  <li>Manzana</li>', '  <li>Pera<li>', '  <li>Uva</li>', '</ul>'], 2, 'Falta cerrar el elemento con </li>.'],
+  ['i', ['<ol>', '  <li>Lunes</li>', '  Martes', '  <li>Miércoles</li>', '</ol>'], 2, 'Cada elemento de la lista debe ir dentro de <li>.'],
+  ['i', ['<ul>', '  <li>Pan</li>', '  <li>Leche</li>', '</ol>'], 3, 'La etiqueta de cierre no coincide: se abrió ul y se cerró ol.'],
+  ['s', ['<!DOCTYPE html>', '<html>', '<head>', '  <titulo>Mi web</titulo>', '</head>', '<body>'], 3, 'La etiqueta correcta es title, no titulo.'],
+  ['s', ['<html>', '<head>', '  <title>Mi web</title>', '</head>', '<bodi>', '  <p>Hola</p>'], 4, 'Está mal escrita: la etiqueta correcta es body.'],
+  ['s', ['<html>', '<head>', '  <title>Mi blog<title>', '</head>', '<body>'], 2, 'Falta cerrar el título con </title>.'],
+  ['f', ['<p>Hola</p>', '<strong>Importante</strong>', '<em>Texto</i>', '<hr>'], 2, 'La etiqueta de cierre no coincide: se abrió em y se cerró i.'],
+  ['f', ['<p>Primera línea</p>', '<br>', '</br>', '<p>Última línea</p>'], 2, 'El salto de línea se escribe <br>, sin barra al inicio.'],
+  ['f', ['<h1>Oferta</h1>', '<negrita>50% de descuento</negrita>', '<p>Solo hoy</p>', '<hr>'], 1, 'La etiqueta negrita no existe; se usa <strong> o <b>.'],
+  ['c', ['<div>', '  <span>Rojo</span>', '  <p>Texto</p>', '<div>'], 3, 'Falta cerrar la caja: la última línea debe ser </div>.'],
+  ['c', ['<header>Inicio</header>', '<div>Contenido</div>', '<footer>Fin</fotter>'], 2, 'El cierre está mal escrito: debe ser </footer>.']
+];
+
+let st = { lives: 3, ronda: 0, score: 0 }, deck = [], cur, timer, t = 0, answered = true, record = 0;
+try { record = +localStorage.getItem('bug_record') || 0; } catch (e) {}
+$('rec').textContent = record;
+
+function hud() {
+  $('ron').textContent = Math.min(st.ronda, RONDAS) + '/' + RONDAS;
+  $('pts').textContent = st.score;
+  const v = Math.max(st.lives, 0);
+  $('vidas').textContent = '♥'.repeat(v) + '♡'.repeat(3 - v);
+}
+
+function start() {
+  st = { lives: 3, ronda: 0, score: 0, ac: 0, fallos: [] };
+  deck = PUZ.map(p => ({ tema: p[0], lines: p[1], bug: p[2], why: p[3] }));
+  for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+  $('rep').innerHTML = ''; $('ov').classList.remove('fin'); $('ov').classList.add('oculto');
+  Sound.music(); next();
+}
+
+function next() {
+  if (st.lives <= 0 || st.ronda >= RONDAS) { fin(); return; }
+  cur = deck[st.ronda]; st.ronda++; answered = false; t = TIEMPO;
+  $('tema').innerHTML = 'Tema: <b>' + TEMAS[cur.tema].n + '</b> · encuentra la línea con el error';
+  $('lines').className = '';
+  $('lines').innerHTML = cur.lines.map((l, i) => '<button class="ln" data-i="' + i + '"><span class="n">' + (i + 1) + '</span><code>' + esc(l) + '</code></button>').join('');
+  $('fb').innerHTML = ''; $('barra').style.width = '100%'; $('barra').className = '';
+  hud(); clearInterval(timer); timer = setInterval(tick, 100);
+}
+
+function tick() {
+  t -= 0.1;
+  $('barra').style.width = Math.max(t, 0) / TIEMPO * 100 + '%';
+  $('barra').className = t < 6 ? 'bajo' : '';
+  if (t <= 0) responder(-1);
+}
+
+function responder(i) {
+  if (answered) return;
+  answered = true; clearInterval(timer);
+  const L = $('lines').children; let h;
+  $('lines').classList.add('hecho'); L[cur.bug].classList.add('bug');
+  if (i === cur.bug) {
+    const g = 10 + Math.ceil(Math.max(t, 0) / TIEMPO * 10);
+    st.score += g; st.ac++; Sound.ok();
+    h = '<b class="ok">✔ ¡Bug encontrado! +' + g + '</b>';
+  } else {
+    st.lives--; Sound.bad();
+    if (i >= 0) L[i].classList.add('mal');
+    st.fallos.push({ tema: cur.tema, code: cur.lines[cur.bug].trim(), que: i < 0 ? 'Se acabó el tiempo' : 'Elegiste otra línea', why: cur.why });
+    h = '<b class="mal">' + (i < 0 ? '⏰ Se acabó el tiempo' : '✗ Esa línea está bien') + '</b>';
+  }
+  const ult = st.lives <= 0 || st.ronda >= RONDAS;
+  $('fb').innerHTML = h + '<p>' + esc(cur.why) + '</p><button id="sig">' + (ult ? 'Ver resultados' : 'Siguiente') + ' ▶</button>';
+  $('sig').onclick = next; $('sig').focus(); hud();
+}
+
+function fin() {
+  Sound.stop();
+  const gano = st.lives > 0;
+  gano ? Sound.win() : Sound.over();
+  if (st.score > record) { record = st.score; $('rec').textContent = record; try { localStorage.setItem('bug_record', record); } catch (e) {} }
+  $('ovT').textContent = gano ? '¡MISIÓN COMPLETA!' : 'FIN DEL JUEGO';
+  $('ovP').textContent = 'Hiciste ' + st.score + ' puntos y encontraste ' + st.ac + ' bugs de ' + st.ronda + '.';
+  $('btn').textContent = '▶ JUGAR DE NUEVO';
+  let h = '';
+  if (!st.fallos.length) h = '<h3 class="rt">¡Sin errores! Encontraste todos los bugs.</h3>';
+  else {
+    h = '<h3 class="rt">Lo que fallaste y cómo repasarlo</h3>';
+    Object.keys(TEMAS).forEach(k => {
+      const es = st.fallos.filter(f => f.tema === k);
+      if (!es.length) return;
+      h += '<div class="grupo"><h3>' + TEMAS[k].n + '</h3><p class="def"><b>Definición:</b> ' + esc(TEMAS[k].d) + '</p>';
+      es.forEach(e => { h += '<div class="err"><code>' + esc(e.code) + '</code><span class="q">' + e.que + '.</span> El error era este. ' + esc(e.why) + '</div>'; });
+      h += '</div>';
+    });
+  }
+  $('rep').innerHTML = h;
+  $('ov').classList.add('fin'); $('ov').classList.remove('oculto'); $('ov').scrollTop = 0;
+}
+
+$('lines').addEventListener('click', e => { const b = e.target.closest('.ln'); if (b) responder(+b.dataset.i); });
+$('btn').addEventListener('click', start);
+$('full').addEventListener('click', () => {
+  try { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); } catch (e) {}
+});
+$('mute').addEventListener('click', () => {
+  Sound.set(!Sound.on);
+  try { localStorage.setItem('atrapa_mute', Sound.on ? '0' : '1'); } catch (e) {}
+  if (Sound.on && !$('ov').classList.contains('fin') && $('ov').classList.contains('oculto')) Sound.music();
+});
+try { if (localStorage.getItem('atrapa_mute') === '1') Sound.set(false); } catch (e) {}
+
+// decoración: símbolos flotantes
+['🐞', '0101', '</>', '<p>', '<a>', 'bug', '<div>', '404'].forEach((s, k) => {
+  const e = document.createElement('span'); e.className = 'fl'; e.textContent = s;
+  e.style.cssText = 'left:' + (4 + k * 12) + '%;animation-duration:' + (16 + k * 3) + 's;animation-delay:-' + (k * 4) + 's;color:' + NEON[k % NEON.length];
+  document.body.insertBefore(e, document.body.firstChild);
+});
+hud();
+</script>
+</body>
+</html>

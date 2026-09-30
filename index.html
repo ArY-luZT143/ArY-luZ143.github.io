@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mini Arcade de Informática</title>
+
+<style>
+
+/* =====================================================
+   GENERAL
+===================================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    min-height:100vh;
+    color:white;
+    overflow-x:hidden;
+
+    background:
+        linear-gradient(
+            rgba(3,2,18,.45),
+            rgba(3,2,18,.62)
+        ),
+        url("fondo1.png");
+
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+}
+
+
+/* =====================================================
+   LUCES AMBIENTALES
+===================================================== */
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+
+    background:
+        radial-gradient(
+            circle at 10% 40%,
+            rgba(0,220,255,.16),
+            transparent 25%
+        ),
+
+        radial-gradient(
+            circle at 90% 35%,
+            rgba(255,0,190,.16),
+            transparent 25%
+        ),
+
+        radial-gradient(
+            circle at 50% 90%,
+            rgba(130,0,255,.15),
+            transparent 30%
+        );
+
+    z-index:-1;
+}
+
+
+/* =====================================================
+   LÍNEAS DE ESCANEO
+===================================================== */
+
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+
+    background:
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,.015) 0px,
+            rgba(255,255,255,.015) 1px,
+            transparent 1px,
+            transparent 5px
+        );
+
+    z-index:20;
+}
+
+
+/* =====================================================
+   NAVBAR
+===================================================== */
+
+nav{
+    width:94%;
+    height:70px;
+
+    margin:18px auto;
+
+    padding:10px 22px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    background:rgba(5,4,25,.90);
+
+    border:1px solid #573dff;
+
+    border-radius:15px;
+
+    box-shadow:
+        0 0 8px #573dff,
+        0 0 25px rgba(87,61,255,.6);
+
+    position:relative;
+    z-index:10;
+}
+
+
+/* LOGO */
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    font-size:24px;
+    font-weight:bold;
+
+    color:white;
+
+    text-shadow:
+        0 0 7px #00eaff,
+        0 0 18px #00eaff;
+}
+
+.logo-icon{
+    width:45px;
+    height:45px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border:2px solid #00eaff;
+    border-radius:12px;
+
+    box-shadow:
+        0 0 10px #00eaff,
+        inset 0 0 15px rgba(0,234,255,.2);
+}
+
+
+/* MENU */
+
+.menu{
+    display:flex;
+    gap:8px;
+
+    padding:5px;
+
+    background:rgba(0,0,0,.45);
+
+    border-radius:12px;
+}
+
+.menu a{
+    color:#ddd9ff;
+    text-decoration:none;
+
+    padding:11px 16px;
+
+    border-radius:9px;
+
+    font-weight:bold;
+
+    transition:.25s;
+}
+
+.menu a:hover{
+    color:white;
+
+    background:rgba(0,234,255,.08);
+
+    border:1px solid #00eaff;
+
+    box-shadow:
+        0 0 8px #00eaff,
+        0 0 18px #00eaff;
+}
+
+.menu .activo{
+    color:white;
+
+    border:1px solid #ff27d7;
+
+    background:rgba(255,39,215,.13);
+
+    box-shadow:
+        0 0 8px #ff27d7,
+        0 0 18px #ff27d7;
+}
+
+
+/* =====================================================
+   DECORACIONES FLOTANTES
+===================================================== */
+
+.decoracion{
+    position:fixed;
+
+    font-family:monospace;
+    font-weight:bold;
+
+    pointer-events:none;
+
+    z-index:2;
+
+    animation:flotar 4s ease-in-out infinite;
+}
+
+.d1{
+    top:20%;
+    left:4%;
+
+    color:#00eaff;
+
+    text-shadow:
+        0 0 8px #00eaff,
+        0 0 18px #00eaff;
+}
+
+.d2{
+    top:32%;
+    right:3%;
+
+    color:#ff29d9;
+
+    text-shadow:
+        0 0 8px #ff29d9,
+        0 0 18px #ff29d9;
+
+    animation-delay:1s;
+}
+
+.d3{
+    bottom:22%;
+    left:6%;
+
+    color:#a855ff;
+
+    text-shadow:
+        0 0 8px #a855ff,
+        0 0 18px #a855ff;
+
+    animation-delay:2s;
+}
+
+.d4{
+    bottom:30%;
+    right:6%;
+
+    color:#00ffd0;
+
+    text-shadow:
+        0 0 8px #00ffd0,
+        0 0 18px #00ffd0;
+
+    animation-delay:1.5s;
+}
+
+@keyframes flotar{
+
+    0%,100%{
+        transform:translateY(0);
+    }
+
+    50%{
+        transform:translateY(-15px);
+    }
+}
+
+
+/* =====================================================
+   CONTENEDOR
+===================================================== */
+
+.contenedor{
+    width:94%;
+    max-width:1450px;
+
+    margin:35px auto 70px;
+
+    position:relative;
+}
+
+
+/* =====================================================
+   DECORACIÓN SUPERIOR
+===================================================== */
+
+.titulo-mini{
+    text-align:center;
+
+    margin-bottom:15px;
+
+    color:#00eaff;
+
+    font-family:monospace;
+    font-size:14px;
+    letter-spacing:5px;
+
+    text-shadow:
+        0 0 7px #00eaff;
+}
+
+
+/* =====================================================
+   PANEL PRINCIPAL
+===================================================== */
+
+.principal{
+
+    width:850px;
+    max-width:100%;
+
+    margin:auto;
+
+    padding:45px 55px 38px;
+
+    text-align:center;
+
+    background:
+        linear-gradient(
+            rgba(7,4,29,.88),
+            rgba(3,2,19,.94)
+        );
+
+    border:1px solid #b72cff;
+
+    border-radius:20px;
+
+    box-shadow:
+        0 0 8px #b72cff,
+        0 0 25px rgba(183,44,255,.6),
+        inset 0 0 35px rgba(120,0,255,.10);
+
+    position:relative;
+
+    z-index:5;
+}
+
+
+/* esquinas */
+
+.principal .esquina{
+    position:absolute;
+
+    width:35px;
+    height:35px;
+}
+
+.e1{
+    top:12px;
+    left:12px;
+
+    border-top:2px solid #00eaff;
+    border-left:2px solid #00eaff;
+}
+
+.e2{
+    top:12px;
+    right:12px;
+
+    border-top:2px solid #ff29d9;
+    border-right:2px solid #ff29d9;
+}
+
+.e3{
+    bottom:12px;
+    left:12px;
+
+    border-bottom:2px solid #00ffd0;
+    border-left:2px solid #00ffd0;
+}
+
+.e4{
+    bottom:12px;
+    right:12px;
+
+    border-bottom:2px solid #ffc400;
+    border-right:2px solid #ffc400;
+}
+
+
+/* =====================================================
+   ICONOS PRINCIPALES
+===================================================== */
+
+.iconos{
+    font-size:48px;
+
+    margin-bottom:10px;
+
+    filter:
+        drop-shadow(0 0 8px #00eaff)
+        drop-shadow(0 0 14px #ff25d7);
+}
+
+
+/* =====================================================
+   TITULO
+===================================================== */
+
+h1{
+
+    font-size:66px;
+
+    letter-spacing:5px;
+
+    font-weight:900;
+
+    color:white;
+
+    margin-bottom:10px;
+
+    text-shadow:
+        0 0 4px white,
+        0 0 10px #00eaff,
+        0 0 22px #00eaff,
+        0 0 35px #a735ff;
+}
+
+
+/* =====================================================
+   SUBTITULO
+===================================================== */
+
+.subtitulo{
+
+    display:inline-block;
+
+    padding:8px 22px;
+
+    margin-bottom:24px;
+
+    color:#ff5de1;
+
+    font-size:19px;
+    font-weight:bold;
+
+    border-bottom:1px solid #ff25d7;
+
+    text-shadow:
+        0 0 7px #ff25d7,
+        0 0 15px #ff25d7;
+}
+
+
+/* =====================================================
+   DESCRIPCIÓN
+===================================================== */
+
+.descripcion{
+
+    max-width:730px;
+
+    margin:auto;
+
+    color:#e2deef;
+
+    line-height:1.7;
+
+    font-size:16px;
+}
+
+
+/* =====================================================
+   BOTONES
+===================================================== */
+
+.botones{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:14px;
+
+    margin-top:28px;
+
+    flex-wrap:wrap;
+}
+
+.boton{
+
+    padding:13px 22px;
+
+    color:white;
+
+    text-decoration:none;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    border:1px solid #00eaff;
+
+    border-radius:7px;
+
+    background:rgba(0,10,30,.55);
+
+    box-shadow:
+        0 0 7px #00eaff;
+
+    transition:.25s;
+}
+
+.boton:hover{
+
+    background:#00eaff;
+
+    color:#050313;
+
+    box-shadow:
+        0 0 10px #00eaff,
+        0 0 25px #00eaff,
+        0 0 45px #00eaff;
+
+    transform:translateY(-3px);
+}
+
+.boton.rosa{
+
+    border-color:#ff25d7;
+
+    box-shadow:
+        0 0 7px #ff25d7;
+}
+
+.boton.rosa:hover{
+
+    background:#ff25d7;
+
+    box-shadow:
+        0 0 10px #ff25d7,
+        0 0 25px #ff25d7;
+}
+
+
+/* =====================================================
+   CATEGORÍAS
+===================================================== */
+
+.categorias{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:10px;
+
+    margin-top:25px;
+
+    flex-wrap:wrap;
+}
+
+.categoria{
+
+    padding:8px 14px;
+
+    border-radius:20px;
+
+    background:rgba(4,3,20,.8);
+
+    border:1px solid #713cff;
+
+    font-size:13px;
+
+    box-shadow:
+        0 0 7px rgba(113,60,255,.6);
+}
+
+
+/* =====================================================
+   DECORACIONES LATERALES
+===================================================== */
+
+.lateral{
+
+    position:absolute;
+
+    width:245px;
+
+    padding:18px;
+
+    background:
+        rgba(5,3,25,.87);
+
+    border-radius:13px;
+
+    z-index:4;
+}
+
+.lateral h3{
+
+    font-size:17px;
+
+    margin-bottom:13px;
+
+    color:white;
+}
+
+.lateral p{
+
+    font-family:monospace;
+
+    font-size:12px;
+
+    line-height:1.8;
+
+    color:#c9c4dc;
+}
+
+
+/* IZQUIERDA */
+
+.lateral.izquierda{
+
+    left:0;
+    top:150px;
+
+    border:1px solid #00eaff;
+
+    box-shadow:
+        0 0 8px #00eaff,
+        inset 0 0 20px rgba(0,234,255,.08);
+}
+
+.lateral.izquierda h3{
+
+    color:#00eaff;
+
+    text-shadow:
+        0 0 7px #00eaff;
+}
+
+
+/* DERECHA */
+
+.lateral.derecha{
+
+    right:0;
+    top:150px;
+
+    border:1px solid #ff25d7;
+
+    box-shadow:
+        0 0 8px #ff25d7,
+        inset 0 0 20px rgba(255,37,215,.08);
+}
+
+.lateral.derecha h3{
+
+    color:#ff25d7;
+
+    text-shadow:
+        0 0 7px #ff25d7;
+}
+
+
+/* =====================================================
+   BLOQUES DE CÓDIGO
+===================================================== */
+
+.codigo-linea{
+
+    margin:4px 0;
+
+    font-family:monospace;
+}
+
+.azul{
+    color:#00eaff;
+}
+
+.rosa{
+    color:#ff25d7;
+}
+
+.verde{
+    color:#00ffd0;
+}
+
+.amarillo{
+    color:#ffc400;
+}
+
+
+/* =====================================================
+   MINI MÁQUINAS ARCADE DECORATIVAS
+===================================================== */
+
+.maquina{
+
+    position:absolute;
+
+    width:115px;
+    height:175px;
+
+    bottom:30px;
+
+    background:#090719;
+
+    border-radius:12px 12px 5px 5px;
+
+    z-index:3;
+
+    opacity:.9;
+}
+
+.maquina::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:90px;
+    height:65px;
+
+    left:12px;
+    top:15px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #13104a,
+            #27052d
+        );
+
+    border:2px solid currentColor;
+
+    box-shadow:
+        0 0 10px currentColor;
+
+    border-radius:5px;
+}
+
+.maquina::after{
+
+    content:"●  ●  ●";
+
+    position:absolute;
+
+    left:25px;
+    top:95px;
+
+    font-size:14px;
+
+    color:currentColor;
+
+    text-shadow:
+        0 0 8px currentColor;
+}
+
+.maquina.uno{
+
+    left:4%;
+
+    color:#00eaff;
+
+    transform:rotate(-3deg);
+
+    box-shadow:
+        0 0 10px #00eaff;
+}
+
+.maquina.dos{
+
+    right:4%;
+
+    color:#ff25d7;
+
+    transform:rotate(3deg);
+
+    box-shadow:
+        0 0 10px #ff25d7;
+}
+
+
+/* =====================================================
+   SECCIÓN DE CARACTERÍSTICAS
+===================================================== */
+
+.caracteristicas{
+
+    width:100%;
+
+    margin-top:40px;
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(4,1fr);
+
+    gap:15px;
+}
+
+
+.feature{
+
+    min-height:125px;
+
+    padding:20px;
+
+    text-align:center;
+
+    background:
+        rgba(5,3,25,.88);
+
+    border:1px solid #4e3bff;
+
+    border-radius:12px;
+
+    transition:.25s;
+}
+
+.feature:hover{
+
+    transform:translateY(-7px);
+
+    border-color:#00eaff;
+
+    box-shadow:
+        0 0 12px #00eaff;
+}
+
+.feature .icon{
+
+    font-size:32px;
+
+    margin-bottom:8px;
+
+    filter:
+        drop-shadow(0 0 7px #00eaff);
+}
+
+.feature h3{
+
+    font-size:15px;
+
+    margin-bottom:5px;
+}
+
+.feature p{
+
+    font-size:12px;
+
+    color:#aaa6be;
+}
+
+
+/* =====================================================
+   FRASE FINAL
+===================================================== */
+
+.frase{
+
+    text-align:center;
+
+    margin-top:28px;
+
+    font-family:monospace;
+
+    font-size:15px;
+
+    letter-spacing:2px;
+
+    color:white;
+
+    text-shadow:
+        0 0 8px #00eaff,
+        0 0 15px #ff25d7;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media(max-width:1200px){
+
+    .lateral{
+        display:none;
+    }
+
+    .maquina{
+        display:none;
+    }
+
+    .caracteristicas{
+        grid-template-columns:
+            repeat(2,1fr);
+    }
+}
+
+
+@media(max-width:750px){
+
+    nav{
+        height:auto;
+
+        flex-direction:column;
+
+        gap:12px;
+    }
+
+    .menu{
+        flex-wrap:wrap;
+
+        justify-content:center;
+    }
+
+    .contenedor{
+        width:95%;
+    }
+
+    .principal{
+        padding:35px 18px;
+    }
+
+    h1{
+        font-size:40px;
+        letter-spacing:2px;
+    }
+
+    .subtitulo{
+        font-size:16px;
+    }
+
+    .descripcion{
+        font-size:14px;
+    }
+
+    .caracteristicas{
+        grid-template-columns:1fr;
+    }
+
+}
+
+
+/* =====================================================
+   TEMA PASTEL  (reemplaza los negros por colores pastel)
+===================================================== */
+nav{background:rgba(190,176,240,.95);border-color:#8f7bdc;box-shadow:0 0 8px #a898e6,0 0 20px rgba(143,123,220,.55),inset 0 0 20px rgba(255,255,255,.25)}
+.logo{color:#2d2452;text-shadow:0 0 8px rgba(255,255,255,.85)}
+.logo-icon{background:#efe8fd;border-color:#5b9fe0;box-shadow:0 0 8px #93c5f0,inset 0 0 12px rgba(91,159,224,.3)}
+.menu{background:rgba(255,255,255,.38)}
+.menu a{color:#3a2f68;border:1px solid transparent}
+.menu a:hover{color:#2d2452;background:rgba(147,197,240,.6);border-color:#5b9fe0;box-shadow:0 0 8px #93c5f0}
+.menu .activo{color:#2d2452;background:rgba(240,166,210,.8);border-color:#d873b3;box-shadow:0 0 8px #f0a6d2}
+body{background:linear-gradient(rgba(110,92,175,.38),rgba(110,92,175,.52)),url("fondo1.png");background-size:cover;background-position:center;background-attachment:fixed}
+h1{color:#fff;text-shadow:0 0 6px #7a5ce0,0 0 18px #e58fc0,0 3px 0 rgba(58,47,104,.6)}
+
+.titulo-mini,.frase{color:#fff;text-shadow:0 1px 6px rgba(45,36,82,.9)}
+.d1{color:#2f7fd0;text-shadow:0 0 8px #fff,0 0 16px #cfe4fa}
+.d2{color:#c0348f;text-shadow:0 0 8px #fff,0 0 16px #f9d3ea}
+.d3{color:#6a4fd6;text-shadow:0 0 8px #fff,0 0 16px #ddd3fa}
+.d4{color:#1f8f76;text-shadow:0 0 8px #fff,0 0 16px #cdf1e6}
+.principal{background:linear-gradient(rgba(198,184,244,.94),rgba(214,186,240,.95));border-color:#d873b3;box-shadow:0 0 8px #e6a0cf,0 0 25px rgba(216,115,179,.45),inset 0 0 35px rgba(255,255,255,.25)}
+.principal h1{color:#2d2452;text-shadow:0 0 4px #fff,0 0 14px rgba(255,255,255,.8),0 3px 0 #b9a8ee}
+.subtitulo{color:#a3287f;text-shadow:none;border-bottom-color:#d873b3}
+.descripcion{color:#2d2452}
+.boton{color:#2d2452;background:rgba(147,197,240,.6);border-color:#5b9fe0;box-shadow:0 0 7px #93c5f0}
+.boton:hover{background:#93c5f0;color:#1f1840;box-shadow:0 0 10px #93c5f0,0 0 25px rgba(147,197,240,.8)}
+.boton.rosa{color:#2d2452;background:rgba(240,166,210,.7);border-color:#d873b3;box-shadow:0 0 7px #f0a6d2}
+.boton.rosa:hover{background:#f0a6d2;box-shadow:0 0 10px #f0a6d2,0 0 25px rgba(240,166,210,.8)}
+.categoria{background:rgba(255,255,255,.5);border-color:#8f7bdc;color:#2d2452;box-shadow:0 0 6px rgba(143,123,220,.4)}
+.lateral{background:rgba(176,206,242,.94);color:#2d2452}
+.lateral p{color:#2d2452}
+.lateral.izquierda{border-color:#5b9fe0;box-shadow:0 0 8px #93c5f0,inset 0 0 20px rgba(255,255,255,.3)}
+.lateral.izquierda h3{color:#2a5fa8;text-shadow:none}
+.lateral.derecha{background:rgba(244,182,218,.94);border-color:#d873b3;box-shadow:0 0 8px #f0a6d2,inset 0 0 20px rgba(255,255,255,.3)}
+.lateral.derecha h3{color:#a3287f;text-shadow:none}
+.azul{color:#2a5fa8}.verde{color:#1a7f5f}.amarillo{color:#8a5a00}
+.codigo-linea.rosa,.lateral .rosa{color:#b02c86}
+.maquina{background:#a99bdc}
+.maquina::before{background:linear-gradient(135deg,#cbbdf2,#f0b3d8)}
+.maquina.uno{color:#4a90e0;box-shadow:0 0 10px #93c5f0}
+.maquina.dos{color:#d873b3;box-shadow:0 0 10px #f0a6d2}
+.feature{color:#2d2452;background:rgba(200,186,242,.95);border-color:#8f7bdc}
+.feature:nth-child(2){background:rgba(168,205,242,.95);border-color:#5b9fe0}
+.feature:nth-child(3){background:rgba(244,182,218,.95);border-color:#d873b3}
+.feature:nth-child(4){background:rgba(158,220,201,.95);border-color:#4fbf9f}
+.feature:hover{border-color:#5b9fe0;box-shadow:0 0 12px #93c5f0}
+.feature .icon{filter:drop-shadow(0 0 6px #fff)}
+.feature p{color:#3a2f68}
+.principal .iconos{filter:drop-shadow(0 0 8px #fff)}
+
+</style>
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     DECORACIONES FLOTANTES
+===================================================== -->
+
+<div class="decoracion d1">
+    &lt;HTML&gt;
+</div>
+
+<div class="decoracion d2">
+    { JAVASCRIPT }
+</div>
+
+<div class="decoracion d3">
+    # PROGRAM
+</div>
+
+<div class="decoracion d4">
+    &lt;/CODE&gt;
+</div>
+
+
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
+
+<nav>
+
+    <div class="logo">
+
+        <div class="logo-icon">
+            🎮
+        </div>
+
+        Mini Arcade
+
+    </div>
+
+
+    <div class="menu">
+
+        <a href="index.html" class="activo">
+            🏠 Inicio
+        </a>
+
+        <a href="juegoportada.html">
+            🎮 Juegos
+        </a>
+
+        <a href="guia.html">
+            📖 Guía
+        </a>
+
+        <a href="records.html">
+            🏆 Récords
+        </a>
+
+    </div>
+
+</nav>
+
+
+
+<!-- =====================================================
+     CONTENIDO
+===================================================== -->
+
+<main class="contenedor">
+
+
+    <div class="titulo-mini">
+
+        ◈ SYSTEM ONLINE ◈
+        &nbsp;&nbsp;
+        PROGRAMMING ARCADE
+        &nbsp;&nbsp;
+        ◈
+
+    </div>
+
+
+
+    <!-- =================================================
+         PANEL IZQUIERDO
+    ================================================== -->
+
+    <div class="lateral izquierda">
+
+        <h3>
+            &lt; CÓDIGO /&gt;
+        </h3>
+
+        <p>
+
+            <span class="azul">function</span>
+            iniciarJuego(){<br>
+
+            &nbsp;&nbsp;
+            <span class="rosa">let</span>
+            puntos = 0;<br>
+
+            &nbsp;&nbsp;
+            <span class="verde">jugar();</span><br>
+
+            &nbsp;&nbsp;
+            ganarXP();<br>
+
+            }
+
+        </p>
+
+    </div>
+
+
+
+    <!-- =================================================
+         PANEL DERECHO
+    ================================================== -->
+
+    <div class="lateral derecha">
+
+        <h3>
+            ✦ ARCADE STATUS
+        </h3>
+
+        <p>
+
+            <span class="verde">
+                ● ONLINE
+            </span>
+            <br><br>
+
+            JUEGOS: 05<br>
+
+            NIVEL: PROGRAMADOR<br>
+
+            XP: ███████░░░<br>
+
+            SISTEMA: READY
+
+        </p>
+
+    </div>
+
+
+
+    <!-- =================================================
+         MÁQUINAS DECORATIVAS
+    ================================================== -->
+
+    <div class="maquina uno"></div>
+
+    <div class="maquina dos"></div>
+
+
+
+    <!-- =================================================
+         PORTADA
+    ================================================== -->
+
+    <section class="principal">
+
+
+        <div class="esquina e1"></div>
+        <div class="esquina e2"></div>
+        <div class="esquina e3"></div>
+        <div class="esquina e4"></div>
+
+
+        <h1>
+            MINI ARCADE
+        </h1>
+
+
+        <div class="subtitulo">
+
+            ¡APRENDE, JUEGA Y SUPERA TUS RÉCORDS!
+
+        </div>
+
+
+        <p class="descripcion">
+
+            Bienvenido a nuestro
+            <strong>Mini Arcade de Informática</strong>.
+
+            Aquí encontrarás juegos de programación,
+            sistemas operativos, diseño web y soporte técnico para poner
+            a prueba tus conocimientos de una forma
+            divertida e interactiva.
+
+        </p>
+
+
+        <!-- BOTONES -->
+
+        <div class="botones">
+
+            <a
+                href="juegoportada.html"
+                class="boton">
+
+                🎮 VER JUEGOS
+
+            </a>
+
+
+            <a
+                href="guia.html"
+                class="boton rosa">
+
+                📖 INSTRUCCIONES
+
+            </a>
+
+
+            <a
+                href="records.html"
+                class="boton">
+
+                🏆 RÉCORDS
+
+            </a>
+
+        </div>
+
+
+        <!-- CATEGORÍAS -->
+
+        <div class="categorias">
+
+            <div class="categoria">
+                💻 Informática
+            </div>
+
+            <div class="categoria">
+                🧠 Preguntas
+            </div>
+
+            <div class="categoria">
+                🧩 Memoria
+            </div>
+
+            <div class="categoria">
+                💾 Código
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =================================================
+         CARACTERÍSTICAS
+    ================================================== -->
+
+    <section class="caracteristicas">
+
+
+        <div class="feature">
+
+            <div class="icon">
+                🧠
+            </div>
+
+            <h3>
+                PON A PRUEBA TU MENTE
+            </h3>
+
+            <p>
+                Resuelve retos de soporte técnico, sistemas operativos, diseño web
+                y programación.
+            </p>
+
+        </div>
+
+
+
+        <div class="feature">
+
+            <div class="icon">
+                💻
+            </div>
+
+            <h3>
+                APRENDE CÓDIGO
+            </h3>
+
+            <p>
+                HTML, CSS, JavaScript
+                y conceptos informáticos.
+            </p>
+
+        </div>
+
+
+
+        <div class="feature">
+
+            <div class="icon">
+                🏆
+            </div>
+
+            <h3>
+                SUPERA TU RÉCORD
+            </h3>
+
+            <p>
+                Consigue puntos y
+                mejora tu puntuación.
+            </p>
+
+        </div>
+
+
+
+        <div class="feature">
+
+            <div class="icon">
+                🚀
+            </div>
+
+            <h3>
+                SUBE DE NIVEL
+            </h3>
+
+            <p>
+                Completa los desafíos
+                y conviértete en pro.
+            </p>
+
+        </div>
+
+
+    </section>
+
+
+
+    <div class="frase">
+
+        &lt; APRENDE PROGRAMANDO /&gt;
+        &nbsp; ✦ &nbsp;
+        ¡CONVIÉRTETE EN UN PRO!
+        &nbsp; ✦ &nbsp;
+        🎮
+
+    </div>
+
+
+</main>
+
+
+<!-- Música de fondo (necesita musica.js y musica.mp3 en la misma carpeta) -->
+<script src="musica.js"></script>
+
+</body>
+</html>

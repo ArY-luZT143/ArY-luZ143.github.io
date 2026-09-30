@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Soporte Rápido</title>
+<style>
+
+:root{
+  --pink:#b9820c; --cyan:#2f7fd0; --yellow:#a86f00; --green:#1f9e64; --purple:#7a5ce0; --red:#d6304f;
+  --panel:rgba(198,184,244,.9); --text:#2d2452;
+  /* Los fondos se cambian con el botón. Para tu propia imagen: --fondo:url('fondo.jpg') */
+  --fondo:none;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  color:var(--text); font-family:"Segoe UI",system-ui,sans-serif; padding:2vh 2vw;
+  background:#a794e6 var(--fondo) center/cover no-repeat fixed; overflow:hidden;
+}
+.game{
+  height:100%; width:100%; display:flex; flex-direction:column; gap:2vh; padding:clamp(14px,2vw,28px);
+  background:var(--panel); backdrop-filter:blur(6px); border-radius:24px;
+  border:2px solid var(--pink); box-shadow:0 0 30px rgba(255,196,0,.5), 0 0 80px rgba(139,92,255,.35), inset 0 0 30px rgba(34,230,255,.12);
+}
+header{display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap}
+h1{margin:0; font-size:clamp(1.6rem,3vw,2.6rem); background:linear-gradient(90deg,var(--yellow),#ff7a00,var(--red)); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 0 10px rgba(255,196,0,.6))}
+.stats{display:flex; gap:10px; flex-wrap:wrap}
+.pill{padding:8px 16px; border-radius:999px; font-weight:700; border:2px solid; background:rgba(0,0,0,.35)}
+.pill.c{border-color:var(--cyan); color:var(--cyan); box-shadow:0 0 12px rgba(34,230,255,.5)}
+.pill.y{border-color:var(--yellow); color:var(--yellow); box-shadow:0 0 12px rgba(255,210,63,.5)}
+.pill.p{border-color:var(--pink); color:var(--pink); box-shadow:0 0 12px rgba(255,196,0,.5)}
+.prog{height:10px; border-radius:99px; background:rgba(255,255,255,.1); overflow:hidden}
+#bar{height:100%; width:0; background:linear-gradient(90deg,var(--pink),var(--yellow),var(--green)); transition:width .4s; box-shadow:0 0 12px var(--pink)}
+.board{flex:1; min-height:0; display:grid; grid-template-columns:1.7fr 1fr; gap:clamp(12px,2vw,28px)}
+.editor{display:flex; flex-direction:column; min-height:0; border-radius:16px; overflow:hidden; border:2px solid var(--cyan); box-shadow:0 0 20px rgba(34,230,255,.35); background:rgba(6,3,24,.9)}
+.bar3{display:flex; align-items:center; gap:8px; padding:10px 14px; background:linear-gradient(90deg,#2a0a55,#0d3a5c)}
+.bar3 i{width:12px; height:12px; border-radius:50%; background:var(--red)} .bar3 i:nth-child(2){background:var(--yellow)} .bar3 i:nth-child(3){background:var(--green)}
+.bar3 span{margin-left:8px; color:var(--cyan); font:600 .9rem Consolas,monospace}
+.code{flex:1; overflow:auto; padding:10px 0; font:clamp(1rem,1.7vw,1.5rem) Consolas,"Courier New",monospace}
+.line{display:flex; gap:16px; padding:8px 18px; cursor:pointer; white-space:pre; border-left:4px solid transparent; transition:background .15s}
+.line:hover{background:rgba(255,196,0,.16); border-left-color:var(--pink)}
+.line:focus-visible{outline:2px solid var(--yellow); outline-offset:-2px}
+.line .n{color:#7d70c0; min-width:1.6em; text-align:right; user-select:none}
+.line i{font-style:normal} .t{color:var(--pink)} .a{color:var(--yellow)} .s{color:var(--green)}
+.line.ok{background:rgba(61,255,176,.2); border-left-color:var(--green)}
+.line.bad{background:rgba(255,77,109,.24); border-left-color:var(--red); animation:shake .3s}
+.locked .line{cursor:default}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.side{display:flex; flex-direction:column; gap:14px; padding:20px; border-radius:16px; border:2px solid var(--purple); box-shadow:0 0 20px rgba(139,92,255,.4); background:linear-gradient(160deg,rgba(139,92,255,.18),rgba(255,196,0,.12)); overflow:auto}
+.mascot{font-size:clamp(3.5rem,8vw,6rem); text-align:center; filter:drop-shadow(0 0 18px var(--pink)); animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px) rotate(6deg)}}
+.hint{margin:0; font-size:1.1rem; text-align:center}
+.tag{display:inline-block; padding:3px 12px; border-radius:99px; background:var(--purple); color:#fff; font-weight:700; font-size:.85rem}
+#msg{min-height:4.5em; font-size:1.05rem; line-height:1.5}
+#msg b.ok{color:var(--green)} #msg b.bad{color:var(--red)}
+button{
+  margin-top:auto; font:800 1.15rem inherit; font-family:inherit; color:#fff; cursor:pointer;
+  background:linear-gradient(90deg,var(--pink),var(--purple)); border:2px solid #fff; border-radius:12px; padding:14px 24px;
+  box-shadow:0 0 18px rgba(255,196,0,.7);
+}
+button:hover{filter:brightness(1.2)} button:focus-visible{outline:3px solid var(--yellow)} button[hidden]{display:none}
+.end{grid-column:1/-1; text-align:center; align-self:center}
+.end h2{font-size:clamp(2rem,5vw,3.5rem); margin:0 0 10px; color:var(--yellow); text-shadow:0 0 18px var(--pink)}
+.end button{margin-top:16px}
+.ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+button.mini{margin:0;padding:8px 14px;font-size:.95rem;font-weight:700;background:rgba(0,0,0,.4);border:2px solid var(--cyan);color:var(--cyan);box-shadow:0 0 12px rgba(34,230,255,.45)}
+.vol{display:flex;align-items:center;gap:6px;color:var(--cyan)} .vol input{accent-color:var(--pink);width:90px}
+@media (max-width:900px){body{overflow:auto} .board{grid-template-columns:1fr} .game{height:auto; min-height:100%}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+
+button:not(.mini):not(.opt){color:#1a0f00;background:linear-gradient(90deg,var(--yellow),#ff7a00)}
+.qbody{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;padding:20px;overflow:auto}
+.ico img {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    display: block;
+}#q{margin:0;text-align:center;font-size:clamp(1.2rem,2.4vw,2rem)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:820px}
+button.opt{margin:0;padding:16px;font-size:clamp(1rem,1.6vw,1.3rem);text-align:left;background:rgba(6,3,24,.9);border:2px solid var(--cyan);box-shadow:0 0 12px rgba(34,230,255,.4);color:var(--text)}
+button.opt b{color:var(--yellow);margin-right:6px}
+button.opt:hover:not(:disabled){border-color:var(--yellow);filter:none}
+button.opt:disabled{cursor:default}
+button.opt.ok{background:rgba(61,255,176,.25);border-color:var(--green)}
+button.opt.bad{background:rgba(255,77,109,.25);border-color:var(--red);animation:shake .3s}
+.time{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;text-align:center;color:var(--yellow);text-shadow:0 0 18px var(--pink)}
+.time.low{color:var(--red);text-shadow:0 0 18px var(--red)}
+.tprog{height:12px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+#tbar{height:100%;width:100%;background:linear-gradient(90deg,var(--red),var(--yellow),var(--green));transition:width .1s linear}
+@media (max-width:900px){.opts{grid-template-columns:1fr}}
+
+/* ===== TEMA PASTEL + etiquetas de tipo + botón volver ===== */
+.game{border-color:#e07fbb;box-shadow:0 0 30px rgba(240,166,210,.6),0 0 80px rgba(147,197,240,.4),inset 0 0 30px rgba(255,255,255,.3)}
+.pill{background:rgba(255,255,255,.55)}
+.prog,.tprog{background:rgba(45,36,82,.16)}
+.editor{background:#efe6fb;border-color:#5b9fe0;box-shadow:0 0 20px rgba(147,197,240,.6)}
+.bar3{background:linear-gradient(90deg,#b8a9ec,#93c5f0)}
+.bar3 span{color:#2d2452}
+.line .n{color:#6a5f9a}
+.side{border-color:#8f7bdc;box-shadow:0 0 20px rgba(143,123,220,.45);background:linear-gradient(160deg,rgba(255,255,255,.4),rgba(244,182,218,.5))}
+.mascot{filter:drop-shadow(0 4px 6px rgba(45,36,82,.3))}
+.h1,h1{filter:none}
+button.opt{background:#f7f0ff;color:#2d2452;border-color:#8f7bdc;box-shadow:0 0 10px rgba(143,123,220,.4)}
+button.opt:hover:not(:disabled){border-color:#d873b3;background:#fdeaf5}
+button.opt.ok{background:rgba(46,158,91,.3);border-color:#1f9e64}
+button.opt.bad{background:rgba(214,48,79,.28);border-color:#d6304f}
+button.mini,a.mini{margin:0;padding:8px 14px;font-size:.95rem;font-weight:700;background:rgba(255,255,255,.6);border:2px solid #5b9fe0;color:#2a5fa8;box-shadow:0 0 10px rgba(147,197,240,.7);text-decoration:none;border-radius:12px;font-family:inherit;cursor:pointer;display:inline-block}
+a.mini:hover,button.mini:hover{background:#dcecfb;filter:none}
+button:not(.mini):not(.opt){color:#2d2452;background:linear-gradient(90deg,#f5dc8a,#f2a96a);box-shadow:0 0 14px rgba(245,169,106,.7)}
+.time{color:#a86f00;text-shadow:0 0 12px #fff}
+.time.low{color:#d6304f;text-shadow:0 0 12px #fff}
+.end h2{color:#a3287f;text-shadow:0 0 14px #fff}
+.end .volver-fin{margin-top:14px;font-size:1rem;padding:10px 20px}
+.ico svg{filter:drop-shadow(0 4px 8px rgba(45,36,82,.35))}
+.vol{color:#2a5fa8}
+.tipo{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 20px;border-radius:14px;border:2px solid #8f7bdc;background:#e6dcfa;color:#2d2452;text-align:center}
+.tipo b{font-size:clamp(.95rem,1.6vw,1.25rem);letter-spacing:.06em}
+.tipo img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    vertical-align: middle;
+}
+.tipo span{font-size:clamp(.75rem,1.1vw,.9rem);opacity:.85}
+.tipo-sel{background:#bcd9f5;border-color:#5b9fe0}
+.tipo-res{background:#f6c3df;border-color:#d873b3}
+.tipo-com{background:#f5e0a0;border-color:#d9a11c}
+.tipo-vf{background:#b4e5d4;border-color:#4fbf9f}
+
+/* ===== VIDEOS DE AYUDA  ===== */
+.videos-ayuda{width:min(820px,94%);margin:28px auto 60px;padding:20px 22px;background:rgba(198,184,244,.97);border:2px solid #8f7bdc;border-radius:14px;box-shadow:0 0 12px rgba(143,123,220,.5);color:#2d2452;font-family:"Segoe UI",system-ui,sans-serif}
+.videos-ayuda h3{margin:0 0 6px;font-size:1.3rem;color:#2d2452}
+.videos-ayuda p{margin:0 0 14px;color:#3a2f68;font-size:.95rem}
+.videos-ayuda .v{position:relative;width:100%;padding-top:56.25%;margin-bottom:14px;border-radius:12px;overflow:hidden;background:#000;border:2px solid #5b9fe0;box-shadow:0 0 8px #93c5f0}
+.videos-ayuda .v:last-child{margin-bottom:0}
+.videos-ayuda iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.ayuda a.ver-video{color:#2a5fa8;font-weight:700}
+
+body{overflow:auto}
+.game{height:calc(100vh - 4vh)}
+@media (max-width:900px){.game{height:auto;min-height:calc(100vh - 4vh)}}
+
+</style>
+</head>
+<script src="arcade-records.js"></script>
+<body>
+<main class="game">
+  <header>
+    <h1>⏱️ Soporte Rápido</h1>
+    <div class="ctrl">
+      <a class="mini" id="volver" href="juegoportada.html">⬅ Menú de juegos</a>
+      <button class="mini" id="fondoBtn" onclick="setFondo(fondo+1)"></button>
+      <button class="mini" id="musicBtn" onclick="toggleMusic()">🔇 Música: OFF</button>
+      <label class="vol" title="Volumen">🔊 <input type="range" id="vol" min="0" max=".5" step=".01" value=".2" oninput="if(Music.master)Music.master.gain.value=+this.value;bgm.volume=Math.min(1,+this.value*2)"></label>
+    </div>
+    <div class="stats">
+      <div class="pill c">Pregunta <b id="lvl">1</b>/<b id="tot"></b></div>
+      <div class="pill y">Puntos <b id="score">0</b></div>
+      <div class="pill p">Vidas <b id="lives"></b></div>
+    </div>
+  </header>
+  <div class="prog"><div id="bar"></div></div>
+  <div class="board" id="board"></div>
+</main>
+<section class="videos-ayuda" id="videos">
+  <h3> Video de ayuda: Soporte</h3>
+  <p>Míralo para repasar el tema antes o después de jugar.</p>
+   <p><a href="https://youtu.be/mO0IxF2HJnM" target="_blank" rel="noopener">📺 Ver video en YouTube</a></p>
+</section>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = t => t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+// ---------- DATOS ----------
+const holes = () => { let h = ""; for (const y of [68,80,120,132]) for (let c = 0; c < 14; c++) h += `<circle cx="${29+c*11.5}" cy="${y}" r="2.6"/>`; return h; };
+const ICONS = {
+  cautin: `<img src="cautin.png" alt="Cautín">`,
+  protoboard: `<img src="protoboard.png" alt="Protoboard">`,
+  led: `<img src="led.png" alt="LED">`,
+  resistencia: `<img src="resistencia.png" alt="Resistencia">`,
+  capacitor: `<img src="capacitor.png" alt="Capacitor">`,
+  multimetro: `<img src="multimetro.png" alt="Multímetro">`
+};
+// k = tipo de pregunta: sel = Selecciona, res = Responde, com = Completa, vf = Verdadero o Falso
+// o[0] es siempre la respuesta correcta (se mezclan al mostrarlas; en Verdadero/Falso el orden es fijo y la respuesta va en a)
+const QS = [
+  { i:"cautin", k:"sel", q:"¿Cómo se llama esta herramienta?", o:["Cautín","Multímetro","Pinzas","Destornillador"], e:"El cautín calienta el estaño para soldar componentes." },
+  { i:"cautin", k:"res", q:"¿Para qué se usa un cautín?", o:["Para soldar componentes en una placa","Para medir voltaje","Para cortar cables","Para limpiar el polvo"], e:"Derrite el estaño y une los componentes a la placa." },
+  { i:"cautin", k:"res", q:"Antes de soldar, ¿qué conviene hacer con la punta del cautín?", o:["Limpiarla y ponerle un poco de estaño","Mojarla en agua fría","Tocarla con el dedo","Enfriarla con hielo"], e:"Una punta limpia y estañada transmite mejor el calor." },
+  { i:"protoboard", k:"sel", q:"¿Qué es esto?", o:["Una protoboard","Una batería","Un disco duro","Una tarjeta de video"], e:"La protoboard es una placa con agujeros para armar circuitos." },
+  { i:"protoboard", k:"res", q:"¿Para qué sirve una protoboard?", o:["Armar circuitos sin soldar","Soldar más rápido","Enfriar el procesador","Guardar tornillos"], e:"Permite probar circuitos conectando piezas y cables a presión." },
+  { i:"led", k:"sel", q:"¿Qué componente es este?", o:["Un LED","Una resistencia","Un fusible","Un interruptor"], e:"El LED es un diodo que emite luz." },
+  { i:"led", k:"res", q:"¿Qué significan las siglas LED?", o:["Diodo emisor de luz","Lámpara eléctrica directa","Luz de energía digital","Línea de electrones dobles"], e:"LED viene de Light Emitting Diode." },
+  { i:"led", k:"com", q:"La pata más larga de un LED es el...", o:["Ánodo (+)","Cátodo (−)","Tierra","Fusible"], e:"La pata larga es el ánodo y va hacia el positivo." },
+  { i:"resistencia", k:"sel", q:"¿Qué componente es este?", o:["Una resistencia","Un capacitor","Un LED","Un diodo"], e:"Las bandas de colores indican su valor en ohmios." },
+  { i:"resistencia", k:"res", q:"¿Qué hace una resistencia?", o:["Limita el paso de la corriente","Almacena energía","Emite luz","Genera voltaje"], e:"Por ejemplo, protege a un LED para que no se queme." },
+  { i:"resistencia", k:"sel", q:"¿En qué unidad se mide la resistencia?", o:["Ohmios (Ω)","Voltios (V)","Amperios (A)","Vatios (W)"], e:"La resistencia se mide en ohmios." },
+  { i:"capacitor", k:"sel", q:"¿Qué componente es este?", o:["Un capacitor","Una resistencia","Un LED","Un cautín"], e:"Este es un capacitor electrolítico (cilíndrico)." },
+  { i:"capacitor", k:"res", q:"¿Qué hace un capacitor?", o:["Almacena energía eléctrica por un momento","Corta cables","Produce calor","Mide la temperatura"], e:"Se carga y se descarga, y ayuda a estabilizar el voltaje." },
+  { i:"capacitor", k:"com", q:"Un capacitor electrolítico tiene polaridad. Si lo conectas al revés...", o:["Puede dañarse o incluso reventar","Funciona mejor","No pasa nada","Cambia de color"], e:"Fíjate en la franja del lado negativo (−)." },
+  { i:"multimetro", k:"sel", q:"¿Cómo se llama este instrumento?", o:["Multímetro","Termómetro","Cautín","Calculadora"], e:"El multímetro es la herramienta básica de todo técnico." },
+  { i:"multimetro", k:"res", q:"¿Qué puedes medir con un multímetro?", o:["Voltaje, corriente y resistencia","Solo la temperatura","La velocidad del internet","El peso de una pieza"], e:"También sirve para probar continuidad en un cable." },
+  { i:"multimetro", k:"sel", q:"¿En qué unidad se mide el voltaje?", o:["Voltios (V)","Ohmios (Ω)","Henrios (H)","Metros (m)"], e:"El voltaje se mide en voltios." },
+  // ----- Preguntas nuevas: Verdadero/Falso (a = respuesta correcta) y Completa -----
+  { k:"vf", i:"cautin", q:"El cautín se usa para medir voltaje.", a:false, e:"El cautín sirve para soldar; el voltaje se mide con el multímetro." },
+  { k:"vf", i:"protoboard", q:"En una protoboard se puede armar un circuito sin soldar.", a:true, e:"Las piezas y cables se conectan a presión en los agujeros." },
+  { k:"vf", i:"led", q:"Un LED puede conectarse en cualquier sentido y siempre enciende.", a:false, e:"El LED tiene polaridad: si lo conectas al revés, no enciende." },
+  { k:"vf", i:"resistencia", q:"Una resistencia limita el paso de la corriente.", a:true, e:"Por eso se usa, por ejemplo, para proteger a un LED." },
+  { k:"vf", i:"capacitor", q:"Un capacitor electrolítico no tiene polaridad.", a:false, e:"Sí tiene polaridad: la franja indica el lado negativo (−)." },
+  { k:"vf", i:"multimetro", q:"Un multímetro puede medir voltaje.", a:true, e:"También mide corriente, resistencia y continuidad." },
+  { k:"com", i:"cautin", q:"El cautín derrite el ______ para unir los componentes.", o:["estaño","agua","papel","aceite"], e:"El estaño es el metal que se derrite al soldar." },
+  { k:"com", i:"led", q:"LED significa Light Emitting ______.", o:["Diode","Device","Digit","Driver"], e:"Light Emitting Diode: diodo emisor de luz." },
+  { k:"com", i:"resistencia", q:"Las bandas de colores de una resistencia indican su ______.", o:["valor en ohmios","marca","tamaño del cable","voltaje máximo"], e:"Cada color representa un número que da el valor en ohmios." },
+  { k:"com", i:"capacitor", q:"Un capacitor almacena energía ______.", o:["eléctrica","nuclear","mecánica","solar"], e:"Se carga y se descarga, y ayuda a estabilizar el voltaje." },
+  { k:"com", i:"multimetro", q:"Para medir voltaje, el multímetro se conecta en ______ con el componente.", o:["paralelo","serie","espiral","cruz"], e:"El voltaje se mide en paralelo; la corriente, en serie." },
+];
+
+// ---------- JUEGO ----------
+const N = 10, TIME = 15;
+let order = [], qi = 0, score = 0, lives = 3, okCount = 0, answered = false, tLeft = TIME, timer = 0, cur = [];
+const TIPOS = {
+  sel: { t: "👆 SELECCIONA", d: "Elige la opción correcta" },
+  res: { t: "💬 RESPONDE", d: "Contesta la pregunta" },
+  com: { t: "✏️ COMPLETA", d: "Completa la frase" },
+  vf:  { t: "✅❌ VERDADERO O FALSO", d: "¿La afirmación es verdadera o falsa?" }
+};
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const BOARD = `
+<div class="editor"><div class="bar3"><i></i><i></i><i></i><span>laboratorio.exe</span></div>
+<div class="qbody"><div class="tipo" id="tipo"></div><div class="ico" id="ico"></div><h2 id="q"></h2><div class="opts" id="opts"></div></div></div>
+<aside class="side"><div class="mascot">⏱️</div><div class="time" id="time">15</div>
+<div class="tprog"><div id="tbar"></div></div>
+<div id="msg" aria-live="polite"></div><button id="next" hidden>Siguiente</button></aside>`;
+
+function updateStats() { $("score").textContent = score; $("lives").textContent = "❤️".repeat(lives) + "🤍".repeat(3 - lives); }
+function start() {
+  clearInterval(timer); order = shuffle(QS).slice(0, N); qi = 0; score = 0; lives = 3; okCount = 0;
+  $("tot").textContent = N; $("board").innerHTML = BOARD; $("next").onclick = nextClick; updateStats(); render();
+}
+function tick() { $("time").textContent = Math.ceil(tLeft); $("time").classList.toggle("low", tLeft <= 5); $("tbar").style.width = (tLeft / TIME * 100) + "%"; }
+function render() {
+  answered = false; const Q = order[qi];
+  $("lvl").textContent = qi + 1; $("bar").style.width = (qi / N * 100) + "%";
+  $("ico").innerHTML = ICONS[Q.i]; $("q").textContent = Q.q; $("msg").textContent = ""; $("next").hidden = true;
+  const T = TIPOS[Q.k] || TIPOS.sel;
+  $("tipo").className = "tipo tipo-" + (Q.k || "sel"); $("tipo").innerHTML = `<b>${T.t}</b><span>${T.d}</span>`;
+  cur = Q.k === "vf" ? [{ t: "Verdadero", ok: Q.a }, { t: "Falso", ok: !Q.a }] : shuffle(Q.o.map((t, k) => ({ t, ok: k === 0 })));
+  const box = $("opts"); box.innerHTML = "";
+  cur.forEach((o, k) => { const b = document.createElement("button"); b.className = "opt"; b.innerHTML = `<b>${k+1}</b>${esc(o.t)}`; b.onclick = () => pickOpt(k); box.appendChild(b); });
+  tLeft = TIME; tick(); clearInterval(timer);
+  timer = setInterval(() => { tLeft -= .1; if (tLeft <= 0) { tLeft = 0; tick(); pickOpt(-1); } else tick(); }, 100);
+}
+function pickOpt(k) {
+  if (answered) return; answered = true; clearInterval(timer);
+  const Q = order[qi], right = cur.findIndex(o => o.ok);
+  [...$("opts").children].forEach((b, i) => { b.disabled = true; if (i === right) b.classList.add("ok"); else if (i === k) b.classList.add("bad"); });
+  if (k === right) { const pts = 100 + Math.ceil(tLeft) * 5; score += pts; okCount++; sfx(true); $("msg").innerHTML = `<b class="ok">¡Correcto! +${pts}</b><br>${esc(Q.e)}`; }
+  else { lives--; sfx(false); $("msg").innerHTML = `<b class="bad">${k < 0 ? "¡Se acabó el tiempo!" : "Respuesta incorrecta."}</b><br>${esc(Q.e)}`; }
+  $("bar").style.width = ((qi + 1) / N * 100) + "%"; updateStats();
+  const isEnd = lives <= 0 || qi === N - 1, b = $("next");
+  b.textContent = isEnd ? "Ver resultado" : "Siguiente"; b.dataset.end = isEnd ? "1" : ""; b.hidden = false; b.focus();
+}
+function nextClick() {
+  if ($("next").dataset.end) {
+    const t = okCount >= 9 ? "¡Técnico experto! 🏆" : okCount >= 6 ? "¡Buen técnico! 🔧" : lives <= 0 ? "Sin vidas 💥" : "Sigue practicando 💡";
+    $("board").innerHTML = `<div class="end"><h2>${t}</h2><p>Correctas: <b>${okCount}</b> de ${N}. Puntos: <b>${score}</b></p><button onclick="start()">Jugar de nuevo</button><br><a class="mini volver-fin" href="juegoportada.html">🎮 Volver al menú de juegos</a></div>`;
+    return;
+  }
+  qi++; render();
+}
+addEventListener("keydown", e => { if (/^[1-4]$/.test(e.key) && $("opts") && +e.key <= cur.length) pickOpt(+e.key - 1); });
+
+// ---------- FONDOS ----------
+const rng = s => () => (s = s * 16807 % 2147483647) / 2147483647;
+const wrap = i => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">${i}</svg>`;
+const stars = (r, n, maxY) => { let s = ""; for (let k = 0; k < n; k++) s += `<circle cx="${r()*1600|0}" cy="${r()*maxY|0}" r="${(r()*1.8+.4).toFixed(1)}" fill="#fff" opacity="${(r()*.7+.3).toFixed(2)}"/>`; return s; };
+const FONDOS = [
+  { n: "Espacio", f: () => { const r = rng(3); return wrap(`<defs><radialGradient id="g" cx=".5" cy=".4" r=".9"><stop offset="0" stop-color="#c3b3f2"/><stop offset=".6" stop-color="#a794e6"/><stop offset="1" stop-color="#8e7cd6"/></radialGradient><radialGradient id="p" cx=".35" cy=".3"><stop offset="0" stop-color="#ffd23f"/><stop offset="1" stop-color="#ff2bd6"/></radialGradient><radialGradient id="q" cx=".35" cy=".3"><stop offset="0" stop-color="#7ff0ff"/><stop offset="1" stop-color="#3a3bd6"/></radialGradient><filter id="b"><feGaussianBlur stdDeviation="60"/></filter></defs><rect width="1600" height="900" fill="url(#g)"/><g filter="url(#b)" opacity=".7"><circle cx="300" cy="200" r="200" fill="#ff2bd6"/><circle cx="1300" cy="650" r="240" fill="#22e6ff"/><circle cx="900" cy="150" r="150" fill="#8b5cff"/></g>${stars(r,170,900)}<circle cx="1350" cy="220" r="110" fill="url(#p)"/><ellipse cx="1350" cy="220" rx="190" ry="34" fill="none" stroke="#ffd23f" stroke-width="6" opacity=".8" transform="rotate(-18 1350 220)"/><circle cx="230" cy="700" r="70" fill="url(#q)"/><circle cx="215" cy="685" r="16" fill="#fff" opacity=".25"/>`); } },
+  { n: "Matrix", f: () => { const r = rng(5), ch = ["0","1","&lt;","&gt;","/","{","}","=",";"]; let t = "";
+      for (let c = 0; c < 48; c++) { const x = c*34+10, y0 = r()*450|0; for (let k = 0; k < 14; k++) t += `<text x="${x}" y="${y0+k*30}" opacity="${((k+1)/14*.9).toFixed(2)}">${ch[r()*ch.length|0]}</text>`; }
+      return wrap(`<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d2f0e4"/><stop offset="1" stop-color="#8fd3b8"/></linearGradient></defs><rect width="1600" height="900" fill="url(#g)"/><g font-family="monospace" font-size="24" fill="#2f9e6a">${t}</g>`); } },
+  { n: "Ciudad", f: () => { const r = rng(11), C = ["#22e6ff","#ff2bd6","#8b5cff"], W = ["#ffd23f","#22e6ff","#ff2bd6"]; let b = "", x = -20;
+      while (x < 1600) { const w = 90+r()*90|0, h = 180+r()*380|0, y = 900-h;
+        b += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#8f86cc" stroke="${C[r()*3|0]}" stroke-width="2"/>`;
+        for (let wy = y+18; wy < 890; wy += 26) for (let wx = x+12; wx < x+w-14; wx += 22) if (r() > .55) b += `<rect x="${wx}" y="${wy}" width="10" height="14" fill="${W[r()*3|0]}" opacity=".85"/>`;
+        x += w+8; }
+      return wrap(`<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a8c4f2"/><stop offset=".6" stop-color="#c2b2f0"/><stop offset="1" stop-color="#f0b2d8"/></linearGradient><filter id="b"><feGaussianBlur stdDeviation="18"/></filter></defs><rect width="1600" height="900" fill="url(#g)"/>${stars(r,90,400)}<circle cx="1250" cy="160" r="90" fill="#fff" opacity=".35" filter="url(#b)"/><circle cx="1250" cy="160" r="66" fill="#f4eefe"/>${b}`); } },
+  { n: "Aurora", f: () => { const r = rng(21); return wrap(`<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9dbdf0"/><stop offset="1" stop-color="#7fa6e6"/></linearGradient><filter id="b"><feGaussianBlur stdDeviation="30"/></filter></defs><rect width="1600" height="900" fill="url(#g)"/>${stars(r,140,600)}<g filter="url(#b)"><path d="M0 300C300 100 500 450 800 250S1300 100 1600 300V480C1300 300 1100 600 800 430S300 300 0 520Z" fill="#3dffb0" opacity=".5"/><path d="M0 200C400 380 700 60 1000 240S1400 80 1600 220V340C1400 200 1100 420 1000 340S400 480 0 320Z" fill="#8b5cff" opacity=".45"/><path d="M0 420C300 300 600 560 900 380S1400 300 1600 420V520C1300 420 1000 620 900 500S300 440 0 540Z" fill="#22e6ff" opacity=".35"/></g><path d="M0 900V740L200 580L360 720L560 520L780 740L980 600L1200 750L1400 580L1600 720V900Z" fill="#6a82c8"/><path d="M0 900V820L240 700L420 810L640 690L900 830L1160 710L1400 820L1600 740V900Z" fill="#5468b0"/>`); } },
+];
+let fondo = 0;
+function setFondo(i) {
+  fondo = i % FONDOS.length;
+  document.documentElement.style.setProperty("--fondo", `url("data:image/svg+xml;utf8,${encodeURIComponent(FONDOS[fondo].f())}")`);
+  $("fondoBtn").textContent = "🖼️ Fondo: " + FONDOS[fondo].n;
+  try { localStorage.setItem("bh-fondo", fondo); } catch (e) {}
+}
+// ---------- MÚSICA (sintetizada, no necesita archivos) ----------
+const Music = { ctx: null, master: null, noise: null, on: false, timer: 0, step: 0, next: 0 };
+let userOff = false;
+const bgm = new Audio("musica.mp3"); bgm.loop = true; let bgmOK = true;
+bgm.onerror = () => { bgmOK = false; if (Music.on) { Music.next = Music.ctx.currentTime + .1; sched(); } };
+const BPM = 104, S = 60 / BPM / 4;                       // S = duración de una semicorchea
+const CH = [[57,60,64],[53,57,60],[48,52,55],[55,59,62]]; // Am  F  C  G
+const BASS = [45,41,48,43];
+const hz = n => 440 * 2 ** ((n - 69) / 12);
+function tone(t, f, dur, type, vol, cut) {
+  const c = Music.ctx, o = c.createOscillator(), g = c.createGain(), fl = c.createBiquadFilter();
+  o.type = type; o.frequency.value = f; fl.type = "lowpass"; fl.frequency.value = cut;
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(fl); fl.connect(g); g.connect(Music.master); o.start(t); o.stop(t + dur + .05);
+}
+function kick(t) {
+  const c = Music.ctx, o = c.createOscillator(), g = c.createGain();
+  o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t + .12);
+  g.gain.setValueAtTime(.9, t); g.gain.exponentialRampToValueAtTime(.001, t + .2);
+  o.connect(g); g.connect(Music.master); o.start(t); o.stop(t + .25);
+}
+function hat(t, v) {
+  const c = Music.ctx, s = c.createBufferSource(), fl = c.createBiquadFilter(), g = c.createGain();
+  s.buffer = Music.noise; fl.type = "highpass"; fl.frequency.value = 7000;
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + .05);
+  s.connect(fl); fl.connect(g); g.connect(Music.master); s.start(t); s.stop(t + .06);
+}
+function playStep(st, t) {
+  const bar = st >> 4, s = st % 16, ch = CH[bar];
+  if (s % 4 === 0) kick(t);
+  if (s % 4 === 2) hat(t, .18); else if (s % 2 === 1) hat(t, .05);
+  if (s % 2 === 0) tone(t, hz(BASS[bar] + (s === 6 || s === 14 ? 12 : 0)), S * 1.8, "sawtooth", .45, 600);
+  tone(t, hz(ch[[0,1,2,1][s % 4]] + 12), S * .9, "square", .1, 2600);
+  if (s === 0) ch.forEach(n => tone(t, hz(n), S * 15, "triangle", .07, 1800));
+  if (s === 8) tone(t, hz(ch[2] + 24), S * 6, "sine", .12, 4000);
+}
+function sched() {
+  while (Music.next < Music.ctx.currentTime + .25) { playStep(Music.step, Music.next); Music.next += S; Music.step = (Music.step + 1) % 64; }
+  Music.timer = setTimeout(sched, 60);
+}
+function musicBtnText() { $("musicBtn").textContent = Music.on ? "🎵 Música: ON" : "🔇 Música: OFF"; }
+function startM() {
+  if (Music.on) return;
+  if (!Music.ctx) {
+    const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+    const c = Music.ctx = new C(); Music.master = c.createGain(); Music.master.gain.value = +$("vol").value; Music.master.connect(c.destination);
+    Music.noise = c.createBuffer(1, c.sampleRate >> 1, c.sampleRate); const d = Music.noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  Music.ctx.resume(); Music.on = true; Music.step = 0; Music.next = Music.ctx.currentTime + .1; bgm.volume = Math.min(1, +$("vol").value * 2); if (bgmOK) bgm.play().catch(() => {}); else sched(); musicBtnText();
+}
+function stopM() { Music.on = false; clearTimeout(Music.timer); bgm.pause(); musicBtnText(); }
+function toggleMusic() { if (Music.on) { userOff = true; stopM(); } else { userOff = false; startM(); } }
+function sfx(ok) {
+  if (!Music.on) return; const t = Music.ctx.currentTime;
+  if (ok) { tone(t, hz(76), .18, "square", .25, 4000); tone(t + .12, hz(83), .35, "square", .25, 4000); }
+  else { tone(t, hz(43), .35, "sawtooth", .4, 500); tone(t + .05, hz(42), .3, "sawtooth", .3, 500); }
+}
+// La música arranca con el primer clic o tecla (los navegadores bloquean el audio automático)
+const firstGesture = e => {
+  if (e.target.closest && e.target.closest("#musicBtn")) return;
+  removeEventListener("pointerdown", firstGesture); removeEventListener("keydown", firstGesture);
+  if (!userOff) startM();
+};
+addEventListener("pointerdown", firstGesture); addEventListener("keydown", firstGesture);
+try { fondo = +localStorage.getItem("bh-fondo") || 0; } catch (e) {}
+setFondo(fondo);
+
+start();
+</script>
+</body>
+</html>

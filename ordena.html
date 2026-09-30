@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ordena el código</title>
+<style>
+:root{--cy:#3b8fe0;--tl:#1a9e80;--mg:#d63a9f;--ye:#c98a00;--rd:#d6304f;--vi:#8f7bdc}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{min-height:100vh;color:#fff;font-family:"Segoe UI",system-ui,sans-serif;background:radial-gradient(ellipse at 50% 0,#063a34,#07060f 65%);overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;background:repeating-linear-gradient(0deg,#ffffff07 0 1px,transparent 1px 4px);pointer-events:none}
+.fl{position:fixed;top:0;font:700 20px Consolas,monospace;opacity:.15;pointer-events:none;animation:sube linear infinite}
+@keyframes sube{from{transform:translateY(105vh)}to{transform:translateY(-15vh)}}
+html{font-size:clamp(16px,1.1vw + 9px,24px)}
+#juego{width:100%;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding:12px;position:relative;z-index:1}
+.hud,.ayuda{width:100%;max-width:760px;margin-left:auto;margin-right:auto}
+h2{margin:0 0 10px;text-align:center;font-size:1.7rem;letter-spacing:2px;background:linear-gradient(90deg,var(--tl),var(--ye),var(--cy));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px var(--tl))}
+.hud{display:flex;gap:6px;margin-bottom:8px;font-weight:700;font-size:.75rem}
+.chip{flex:1;text-align:center;padding:5px 4px;border-radius:10px;border:2px solid;background:#0d0a20;white-space:nowrap}
+.c1{border-color:var(--cy);color:var(--cy);box-shadow:0 0 10px var(--cy),inset 0 0 8px #22e5ff44}
+.c2{border-color:var(--mg);color:var(--mg);box-shadow:0 0 10px var(--mg),inset 0 0 8px #ff2bd644;letter-spacing:2px}
+.c3{border-color:var(--tl);color:var(--tl);box-shadow:0 0 10px var(--tl),inset 0 0 8px #00ffd044}
+.c4{border-color:var(--ye);color:var(--ye);box-shadow:0 0 10px var(--ye),inset 0 0 8px #ffe14d44}
+.stage{position:relative;flex:1;min-height:0;display:flex;border-radius:18px;padding:3px;isolation:isolate}
+.stage::before{content:"";position:absolute;inset:0;border-radius:18px;z-index:-1;background:linear-gradient(135deg,var(--tl),var(--vi),var(--cy),var(--ye));box-shadow:0 0 28px #00ffd077,0 0 60px #22e5ff44;animation:giro 6s linear infinite}
+@keyframes giro{to{filter:hue-rotate(360deg)}}
+.panel{flex:1;min-width:0;overflow-y:auto;display:flex;flex-direction:column;background:#0b0818;border-radius:15px;padding:16px max(14px,calc((100% - 760px)/2)) 30px}
+.panel>:first-child{margin-top:auto}
+.panel>:last-child{margin-bottom:auto}
+.mision{text-align:center;font-size:.95rem;color:#e2dcff;margin-bottom:12px;line-height:1.4}
+.mision b{color:var(--tl);text-shadow:0 0 8px var(--tl)}
+.win{border:2px solid var(--tl);border-radius:12px;background:#0a1f1c;box-shadow:0 0 14px #00ffd055;overflow:hidden;margin-bottom:14px}
+.wb{display:flex;gap:6px;align-items:center;padding:6px 10px;background:#12332e;font:600 .75rem Consolas,monospace;color:#a0c9c2}
+.wb b{width:10px;height:10px;border-radius:50%;background:var(--rd)}
+.wb b:nth-child(2){background:var(--ye)}.wb b:nth-child(3){background:var(--tl)}
+.wb span{margin-left:8px}
+#lineas{display:flex;flex-direction:column;gap:8px;padding:12px}
+.ln{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#12332e;border:2px solid transparent;border-radius:10px;font:600 .95rem Consolas,monospace;color:#eafffb}
+.ln .num{width:22px;height:22px;border-radius:50%;background:#0d0a20;border:2px solid var(--tl);color:var(--tl);font:700 .75rem Consolas,monospace;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ln .txt{flex:1;white-space:pre}
+.ln .mv{display:flex;gap:4px;flex-shrink:0}
+.ln button{font:700 1rem inherit;padding:4px 10px;border-radius:8px;box-shadow:none}
+.ln.ok{border-color:var(--tl);background:#00ffd022}
+.ln.mal{border-color:var(--rd);background:#ff4d6d22}
+#lineas.bloqueado .ln button{opacity:.35;pointer-events:none}
+.acciones{display:flex;justify-content:center;gap:14px;margin-top:6px}
+.fb{min-height:60px;margin-top:10px;font-size:.9rem;line-height:1.45;color:#e2dcff;text-align:center}
+.fb b.ok{color:var(--tl);text-shadow:0 0 8px var(--tl)}
+.fb b.mal{color:var(--rd);text-shadow:0 0 8px var(--rd)}
+.explica{list-style:none;margin-top:8px;padding:0;text-align:left;font-size:.85rem;color:#c9f5ec}
+.explica li{padding:6px 0;border-top:1px solid #1e4a44}
+.explica code{color:var(--ye);font-family:Consolas,monospace}
+button{font:inherit;font-weight:800;font-size:1.05rem;color:#fff;background:#0d2620;border:2px solid #fff;border-radius:12px;padding:10px 30px;cursor:pointer;box-shadow:0 0 12px var(--tl),0 0 26px var(--cy),inset 0 0 10px #00ffd066;text-shadow:0 0 8px #fff}
+button:hover{background:#153a30}
+button:focus-visible{outline:3px solid var(--ye);outline-offset:3px}
+.mute{position:absolute;top:0;right:0;padding:4px 10px;font-size:1rem;border-radius:10px;box-shadow:0 0 10px var(--cy)}
+.overlay{position:absolute;inset:3px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;padding:24px;text-align:center;background:#07060fee;border-radius:15px;z-index:3}
+.overlay.oculto{display:none}
+.overlay.fin{justify-content:flex-start;overflow-y:auto}
+.overlay.fin .tags{display:none}
+.overlay h1{margin:0;font-size:2rem;text-shadow:0 0 6px #fff,0 0 18px var(--tl),0 0 32px var(--cy)}
+.overlay p{margin:0;color:#e2dcff;line-height:1.4}
+.tags{font:700 .9rem Consolas,monospace;display:flex;gap:14px}
+.tags span:nth-child(1){color:var(--tl)}.tags span:nth-child(2){color:var(--cy)}.tags span:nth-child(3){color:var(--ye)}
+.ayuda{margin-top:8px;font-size:.8rem;color:#a59fc9;text-align:center}
+.volver{position:fixed;left:16px;bottom:16px;z-index:20;text-decoration:none;color:#fff;font-weight:700;font-size:.85rem;padding:9px 16px;border-radius:10px;border:2px solid var(--cy);background:#0d0a20cc;box-shadow:0 0 8px var(--cy)}
+@media (prefers-reduced-motion:reduce){.stage::before,.fl{animation:none}}
+
+/* ===== TEMA PASTEL ===== */
+body{background:radial-gradient(ellipse at 50% 0,#d3f0e6,#a99be0 65%);color:#2d2452}
+body::before{background:repeating-linear-gradient(0deg,#ffffff18 0 1px,transparent 1px 4px)}
+.fl{opacity:.35}
+h2{filter:drop-shadow(0 0 6px rgba(255,255,255,.7))}
+.chip{background:#e9defa}
+.panel{background:#c9bcf3}
+.mision,.pregunta,.fb,.ayuda{color:#2d2452}
+.mision b,.fb b.ok,.fb b.mal{text-shadow:none}
+.overlay{background:rgba(198,184,244,.97)}
+.overlay p{color:#2d2452}
+.overlay h1{color:#2d2452;text-shadow:0 0 8px #fff,0 0 18px #f0a6d2}
+button,button.grande{font:inherit;font-weight:800;font-size:1.05rem;color:#2d2452;background:#f5b5da;border:2px solid #8f7bdc;border-radius:12px;padding:10px 30px;cursor:pointer;box-shadow:0 0 12px #f0a6d2,0 0 22px rgba(147,197,240,.7);text-shadow:none}
+button:hover,button.grande:hover{background:#f0a0d0}
+.mute{padding:4px 10px;font-size:1rem;border-radius:10px}
+a.menu-link{display:inline-block;text-decoration:none;font-weight:800;font-size:1rem;color:#2d2452;background:#a8cff3;border:2px solid #8f7bdc;border-radius:12px;padding:10px 28px;box-shadow:0 0 12px rgba(147,197,240,.8)}
+a.menu-link:hover{background:#93c5f0}
+.volver{position:fixed;left:12px;top:12px;bottom:auto;z-index:20;text-decoration:none;color:#2d2452;font-weight:800;font-size:.85rem;padding:6px 14px;border-radius:10px;border:2px solid #8f7bdc;background:#a8cff3;box-shadow:0 0 10px rgba(147,197,240,.8)}
+.volver:hover{background:#93c5f0}
+@media(max-width:520px){h2{margin-top:36px}}
+
+.win{background:#e6f5ef;border-color:#1a9e80;box-shadow:0 0 14px rgba(26,158,128,.35)}
+.wb{background:#a0dccb;color:#1f5a4a}
+.ln{background:#f2fbf8;color:#2d2452}
+.ln .num{background:#fff}
+.ln.ok{background:rgba(46,158,91,.28)}
+.ln.mal{background:rgba(214,48,79,.22)}
+.ln button{background:#a8cff3;padding:4px 10px;font-size:1rem;box-shadow:none}
+.ln button:hover{background:#93c5f0}
+.explica{color:#2d2452}
+.explica li{border-top:1px solid rgba(45,36,82,.2)}
+.explica code{color:#8a5a00}
+.tags span:nth-child(1){color:#1a7f5f}.tags span:nth-child(2){color:#2a5fa8}.tags span:nth-child(3){color:#8a5a00}
+
+/* ===== VIDEOS DE AYUDA (embebidos) ===== */
+.videos-ayuda{width:min(820px,94%);margin:28px auto 60px;padding:20px 22px;background:rgba(198,184,244,.97);border:2px solid #8f7bdc;border-radius:14px;box-shadow:0 0 12px rgba(143,123,220,.5);color:#2d2452;font-family:"Segoe UI",system-ui,sans-serif}
+.videos-ayuda h3{margin:0 0 6px;font-size:1.3rem;color:#2d2452}
+.videos-ayuda p{margin:0 0 14px;color:#3a2f68;font-size:.95rem}
+.videos-ayuda .v{position:relative;width:100%;padding-top:56.25%;margin-bottom:14px;border-radius:12px;overflow:hidden;background:#000;border:2px solid #5b9fe0;box-shadow:0 0 8px #93c5f0}
+.videos-ayuda .v:last-child{margin-bottom:0}
+.videos-ayuda iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.ayuda a.ver-video{color:#2a5fa8;font-weight:700}
+</style>
+</head>
+<script src="arcade-records.js"></script>
+<body>
+<a class="volver" href="juegoportada.html" aria-label="Volver al menú de juegos">⬅ Menú de juegos</a>
+<main id="juego">
+  <button id="mute" class="mute" aria-label="Activar o quitar sonido">🔊</button>
+  <h2>ORDENA EL CÓDIGO</h2>
+  <div class="hud">
+    <span class="chip c1">MISIÓN <span id="mi">0/10</span></span>
+    <span class="chip c2" id="vidas" aria-label="Vidas"></span>
+    <span class="chip c3">PUNTOS <span id="pts">0</span></span>
+    <span class="chip c4">RÉCORD <span id="rec">0</span></span>
+  </div>
+  <div class="stage">
+    <div class="panel">
+      <div class="mision" id="mision">Objetivo: <b>...</b></div>
+      <div class="win">
+        <div class="wb"><b></b><b></b><b></b><span>cmd.exe</span></div>
+        <div id="lineas"></div>
+      </div>
+      <div class="acciones"><button id="comprobar">✔ COMPROBAR</button></div>
+      <div class="fb" id="fb"></div>
+    </div>
+    <div class="overlay" id="ov">
+      <div class="tags"><span>C:\&gt;</span><span>cmd</span><span>0101</span></div>
+      <h1 id="ovT">ORDENA EL CÓDIGO</h1>
+      <p id="ovP">Cada misión trae una lista de comandos de la consola (CMD) desordenados. Usa las flechas ↑ ↓ para ponerlos en el orden correcto y pulsa COMPROBAR. Tienes 3 vidas y bonus por acertar rápido.</p>
+      <button id="btn">▶ JUGAR</button>
+      <a class="menu-link" href="juegoportada.html">🎮 MENÚ DE JUEGOS</a>
+      <div id="rep"></div>
+    </div>
+  </div>
+  <div class="ayuda">Ordena las líneas con ↑ ↓ y pulsa COMPROBAR · <a class="ver-video" href="#videos">⬇ Video de ayuda</a></div>
+</main>
+<section class="videos-ayuda" id="videos">
+  <h3> Video de ayuda: CMD</h3>
+  <p>Míralo para repasar el tema antes o después de jugar.</p>
+  <p><a href="https://youtu.be/erKosEQaaFc" target="_blank" rel="noopener"> Ver video en YouTube</a></p>
+</section>
+
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = t => t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const NEON = ['#4a86dc','#3ea87f','#d59a1c','#d24aa8','#8a6ae0'];
+
+const MISIONES = [
+  { obj:'ver qué archivos hay en la carpeta donde estás ahora mismo', pasos:[
+    ['cd','muestra en qué carpeta estás parado'],
+    ['dir','lista los archivos y carpetas de aquí'] ] },
+  { obj:'crear una carpeta llamada "tareas" y entrar en ella', pasos:[
+    ['mkdir tareas','crea la carpeta "tareas"'],
+    ['cd tareas','entra dentro de esa carpeta'],
+    ['dir','comprueba que está vacía'] ] },
+  { obj:'ver tu dirección IP y comprobar que hay conexión a internet', pasos:[
+    ['ipconfig','muestra la configuración de red y tu IP'],
+    ['ping google.com','envía paquetes para comprobar la conexión'] ] },
+  { obj:'ver los programas abiertos y cerrar uno de ellos', pasos:[
+    ['tasklist','lista todos los procesos en ejecución'],
+    ['taskkill /IM notepad.exe /F','cierra el Bloc de notas por su nombre'] ] },
+  { obj:'crear un archivo de texto vacío y comprobar que apareció', pasos:[
+    ['echo. > notas.txt','crea el archivo vacío "notas.txt"'],
+    ['dir','confirma que "notas.txt" aparece en la lista'] ] },
+  { obj:'ver tu usuario actual y la información del equipo', pasos:[
+    ['whoami','muestra el nombre del usuario que inició sesión'],
+    ['systeminfo','muestra datos del sistema operativo y el equipo'] ] },
+  { obj:'copiar un archivo, renombrar la copia y luego borrarla', pasos:[
+    ['copy notas.txt copia.txt','duplica "notas.txt" como "copia.txt"'],
+    ['ren copia.txt final.txt','le cambia el nombre a "final.txt"'],
+    ['del final.txt','borra "final.txt" de la carpeta'] ] },
+  { obj:'ver la estructura de carpetas como un árbol y limpiar la pantalla', pasos:[
+    ['tree','dibuja las carpetas y subcarpetas en árbol'],
+    ['cls','limpia el texto de la ventana de comandos'] ] },
+  { obj:'crear una carpeta de proyecto, entrar, crear un archivo y verlo listado', pasos:[
+    ['mkdir web','crea la carpeta "web"'],
+    ['cd web','entra en la carpeta "web"'],
+    ['echo. > index.html','crea el archivo "index.html" vacío'],
+    ['dir','muestra que "index.html" ya está ahí'] ] },
+  { obj:'revisar tu red, ver los procesos abiertos y terminar en la carpeta del proyecto', pasos:[
+    ['ipconfig','revisa la configuración de red'],
+    ['tasklist','revisa qué procesos están corriendo'],
+    ['cd \\\\','sube hasta la raíz del disco'],
+    ['cd proyecto','entra en la carpeta "proyecto"'],
+    ['dir','lista lo que hay dentro de "proyecto"'] ] }
+];
+
+const TIEMPO_MISION = 45;
+let st = { mi:0, score:0, lives:3, orden:[], correcto:[], t:0, timer:null, resuelto:false }, record = 0;
+
+const Sound = (() => {
+  let ac, on = true;
+  function ctx() { if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } return ac; }
+  function tone(f, t, d, type, g) {
+    const a = ctx(); if (!a || !on) return;
+    const o = a.createOscillator(), gn = a.createGain();
+    o.type = type || 'sine'; o.frequency.value = f;
+    gn.gain.setValueAtTime(g || .2, t); gn.gain.exponentialRampToValueAtTime(.001, t + d);
+    o.connect(gn); gn.connect(a.destination); o.start(t); o.stop(t + d);
+  }
+  return {
+    get on() { return on; }, set(v) { on = v; },
+    ok() { if (!ctx()) return; const t = ac.currentTime; [523,784,1046].forEach((f,k)=>tone(f,t+k*.07,.16,'triangle',.22)); },
+    mal() { if (!ctx()) return; const t = ac.currentTime; tone(180,t,.28,'sawtooth',.22); },
+    win() { if (!ctx()) return; const t = ac.currentTime; [523,659,784,1046,1318].forEach((f,k)=>tone(f,t+k*.09,.22,'triangle',.22)); },
+    over() { if (!ctx()) return; const t = ac.currentTime; [400,300,200,120].forEach((f,k)=>tone(f,t+k*.14,.3,'sawtooth',.2)); }
+  };
+})();
+
+function barajar(a) {
+  const r = a.map((v,i)=>({v,i})).sort(()=>Math.random()-.5);
+  return r.map(x=>x.v);
+}
+
+function hud() {
+  $('mi').textContent = Math.min(st.mi, MISIONES.length) + '/' + MISIONES.length;
+  $('pts').textContent = st.score;
+  const v = Math.max(st.lives, 0);
+  $('vidas').textContent = '♥'.repeat(v) + '♡'.repeat(3 - v);
+  $('rec').textContent = record;
+}
+
+function pintarLineas() {
+  const cont = $('lineas'); cont.innerHTML = '';
+  st.orden.forEach((idx, pos) => {
+    const paso = st.actual.pasos[idx];
+    const div = document.createElement('div'); div.className = 'ln';
+    div.innerHTML = '<span class="num">' + (pos+1) + '</span><span class="txt">' + esc(paso[0]) + '</span>' +
+      '<span class="mv"><button data-d="-1" aria-label="Subir">↑</button><button data-d="1" aria-label="Bajar">↓</button></span>';
+    cont.appendChild(div);
+  });
+}
+
+function mover(pos, dir) {
+  const nueva = pos + dir;
+  if (nueva < 0 || nueva >= st.orden.length) return;
+  [st.orden[pos], st.orden[nueva]] = [st.orden[nueva], st.orden[pos]];
+  pintarLineas();
+}
+
+function siguiente() {
+  if (st.mi >= MISIONES.length || st.lives <= 0) { fin(); return; }
+  st.actual = MISIONES[st.mi]; st.mi++; st.resuelto = false;
+  st.orden = barajar(st.actual.pasos.map((_,i)=>i));
+  st.t = TIEMPO_MISION;
+  $('mision').innerHTML = 'Objetivo: <b>' + esc(st.actual.obj) + '</b>';
+  $('fb').innerHTML = '';
+  $('lineas').classList.remove('bloqueado');
+  pintarLineas(); hud();
+  clearInterval(st.timer);
+  st.timer = setInterval(()=>{ st.t--; if (st.t <= 0) { clearInterval(st.timer); comprobar(true); } }, 1000);
+}
+
+function comprobar(porTiempo) {
+  if (st.resuelto) return;
+  clearInterval(st.timer); st.resuelto = true;
+  $('lineas').classList.add('bloqueado');
+  const bien = !porTiempo && st.orden.every((idx, pos) => idx === pos);
+  const lineas = [...$('lineas').children];
+  lineas.forEach((div, pos) => div.classList.add(st.orden[pos] === pos ? 'ok' : 'mal'));
+  let msg = '';
+  if (bien) {
+    const bonus = Math.max(0, Math.ceil(st.t / TIEMPO_MISION * 10));
+    const pts = 15 + bonus; st.score += pts;
+    Sound.ok();
+    msg = '<b class="ok">¡Orden correcto!</b> +' + pts + ' puntos';
+  } else {
+    st.lives--; Sound.mal();
+    msg = porTiempo ? '<b class="mal">Se acabó el tiempo.</b>' : '<b class="mal">Ese orden no ejecuta bien el objetivo.</b>';
+    msg += ' Así va la secuencia real:';
+  }
+  let lista = '';
+  if (!bien) {
+    lista = '<ul class="explica">' + st.actual.pasos.map(p =>
+      '<li><code>' + esc(p[0]) + '</code> — ' + esc(p[1]) + '</li>').join('') + '</ul>';
+  }
+  $('fb').innerHTML = '<p>' + msg + '</p>' + lista +
+    '<div class="acciones"><button id="sig">' + (st.mi >= MISIONES.length || st.lives <= 0 ? 'Ver resultados' : 'Siguiente misión') + ' ▶</button></div>';
+  $('sig').onclick = siguiente; $('sig').focus();
+  hud();
+}
+
+function fin() {
+  clearInterval(st.timer);
+  const gano = st.lives > 0 && st.mi >= MISIONES.length;
+  gano ? Sound.win() : Sound.over();
+  if (st.score > record) { record = st.score; try { localStorage.setItem('ordena_record', record); } catch (e) {} }
+  hud();
+  $('ovT').textContent = gano ? '¡CONSOLA DOMINADA!' : 'FIN DEL JUEGO';
+  $('ovP').textContent = 'Hiciste ' + st.score + ' puntos en ' + (st.mi) + ' de ' + MISIONES.length + ' misiones.';
+  $('btn').textContent = '▶ JUGAR DE NUEVO';
+  $('rep').innerHTML = '';
+  $('ov').classList.add('fin'); $('ov').classList.remove('oculto'); $('ov').scrollTop = 0;
+  if (window.ArcadeRecords) {
+    const r = ArcadeRecords.guardar('ordena', st.score);
+    if (r) $('ovP').textContent += ' Guardado como ' + r.nombre + (r.nuevoRecord ? ' ¡nuevo récord personal!' : '.');
+  }
+}
+
+function start() {
+  st = { mi:0, score:0, lives:3, actual:null, orden:[], t:0, timer:null, resuelto:false };
+  $('ov').classList.add('oculto'); $('ov').classList.remove('fin');
+  siguiente();
+}
+
+$('lineas').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || st.resuelto) return;
+  const div = b.closest('.ln'); const pos = [...div.parentNode.children].indexOf(div);
+  mover(pos, +b.dataset.d);
+});
+$('comprobar').addEventListener('click', () => comprobar(false));
+$('btn').addEventListener('click', start);
+$('mute').addEventListener('click', () => {
+  Sound.set(!Sound.on);
+  $('mute').textContent = Sound.on ? '🔊' : '🔇';
+  try { localStorage.setItem('ordena_mute', Sound.on ? '0' : '1'); } catch (e) {}
+});
+try { if (localStorage.getItem('ordena_mute') === '1') { Sound.set(false); $('mute').textContent = '🔇'; } } catch (e) {}
+try { record = +localStorage.getItem('ordena_record') || 0; } catch (e) {}
+hud();
+
+['{ }','C:\\>','cmd','0101','mkdir','cd..','dir','tree'].forEach((s,k)=>{
+  const e = document.createElement('span'); e.className = 'fl'; e.textContent = s;
+  e.style.cssText = 'left:' + (4 + k*12) + '%;animation-duration:' + (16 + k*3) + 's;animation-delay:-' + (k*4) + 's;color:' + NEON[k % NEON.length];
+  document.body.insertBefore(e, document.body.firstChild);
+});
+</script>
+
+<!-- Música de fondo (necesita musica.js y musica.mp3 en la misma carpeta) -->
+<script src="musica.js"></script>
+</body>
+</html>

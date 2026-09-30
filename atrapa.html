@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atrapa el código</title>
+<style>
+:root{--cy:#3b8fe0;--mg:#d63a9f;--li:#2e9e5b;--ye:#c98a00;--pu:#8b5cf6}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{min-height:100vh;background:radial-gradient(ellipse at 50% 0,#d3c6f6,#a99be0 65%);color:#fff;font-family:"Segoe UI",system-ui,sans-serif;padding:0}
+html{font-size:clamp(16px,1.1vw + 9px,24px)}
+#juego{width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;padding:12px;position:relative;z-index:1;max-width:none}
+.hud,.ayuda{width:100%;max-width:760px;margin-left:auto;margin-right:auto}
+.overlay>*{max-width:640px}
+.mute{position:absolute;top:0;right:0;padding:4px 10px;font-size:1rem;border-radius:10px;box-shadow:0 0 10px var(--cy)}
+h2{margin:0 0 10px;text-align:center;font-size:1.6rem;letter-spacing:1px;background:linear-gradient(90deg,var(--cy),var(--mg),var(--ye));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px var(--mg))}
+.hud{display:flex;gap:6px;justify-content:space-between;margin-bottom:8px;font-weight:700;font-size:.85rem}
+.chip{flex:1;text-align:center;padding:5px 6px;border-radius:10px;border:2px solid;background:#0d0a20}
+.c1{border-color:var(--cy);color:var(--cy);box-shadow:0 0 10px var(--cy),inset 0 0 8px #3b8fe044}
+.c2{border-color:var(--mg);color:var(--mg);box-shadow:0 0 10px var(--mg),inset 0 0 8px #d63a9f44;letter-spacing:2px}
+.c3{border-color:var(--ye);color:var(--ye);box-shadow:0 0 10px var(--ye),inset 0 0 8px #c98a0044}
+.mision{font-size:.85rem;color:#d9d0ff;text-align:center;margin-bottom:8px;min-height:2.6em}
+.mision b{color:var(--li);text-shadow:0 0 8px var(--li)}
+.stage{position:relative;flex:1;min-height:0;border-radius:18px;padding:3px;isolation:isolate}
+.borde{position:absolute;inset:0;border-radius:18px;z-index:-1;background:linear-gradient(135deg,var(--cy),var(--mg),var(--ye),var(--pu));animation:giro 6s linear infinite;box-shadow:0 0 28px #d63a9f77,0 0 60px #3b8fe044}
+@keyframes giro{to{filter:hue-rotate(360deg)}}
+.stage::before,.stage::after{content:"<>";position:absolute;font:700 14px Consolas,monospace;color:#fff;text-shadow:0 0 8px var(--cy);z-index:2}
+.stage::before{top:8px;left:12px}
+.stage::after{content:"/>";bottom:8px;right:12px}
+canvas{position:absolute;inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);border-radius:15px;background:#0b0818;touch-action:none}
+.overlay{position:absolute;inset:3px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;padding:24px;text-align:center;background:#07060fe8;border-radius:15px}
+.overlay.oculto{display:none}
+.overlay h1{margin:0;font-size:2rem;text-shadow:0 0 6px #fff,0 0 18px var(--mg),0 0 32px var(--cy)}
+.overlay p{margin:0;color:#e2dcff;line-height:1.4}
+.tags{font:700 .9rem Consolas,monospace;display:flex;gap:14px}
+.tags span:nth-child(1){color:var(--cy)}.tags span:nth-child(2){color:var(--li)}.tags span:nth-child(3){color:var(--mg)}.tags span:nth-child(4){color:var(--ye)}
+button{font:inherit;font-weight:800;font-size:1.1rem;color:#fff;background:#150e33;border:2px solid #fff;border-radius:12px;padding:12px 36px;cursor:pointer;box-shadow:0 0 12px var(--mg),0 0 26px var(--cy),inset 0 0 10px #8b5cf688;text-shadow:0 0 8px #fff}
+button:hover{background:#2a1a5e}
+button:focus-visible{outline:3px solid var(--ye);outline-offset:3px}
+.ayuda{margin-top:8px;font-size:.8rem;color:#a59fc9;text-align:center}
+.overlay.fin{justify-content:flex-start;overflow-y:auto}
+.overlay.fin .tags{display:none}
+.rep{width:100%;text-align:left;display:flex;flex-direction:column;gap:10px}
+.rt{margin:6px 0 0;font-size:1.05rem;color:var(--ye);text-shadow:0 0 8px var(--ye)}
+.grupo{border:2px solid var(--mg);border-radius:12px;padding:10px 12px;background:#120a2e;box-shadow:0 0 10px #d63a9f55}
+.grupo h3{margin:0 0 4px;font-size:1rem;color:var(--cy);text-shadow:0 0 8px var(--cy)}
+.def{margin:0 0 6px;font-size:.85rem;color:#e2dcff;line-height:1.4}
+.err{border-left:3px solid var(--mg);padding-left:8px;margin-top:8px;font-size:.85rem;color:#e2dcff;line-height:1.4}
+.err code{display:block;color:var(--ye);font-family:Consolas,monospace;font-size:.95rem;margin-bottom:2px}
+.err .q{color:#ff8fe8;font-weight:700}
+.full{right:auto;left:0}
+@media (prefers-reduced-motion:reduce){.borde{animation:none}}
+
+/* ===== TEMA PASTEL ===== */
+body{color:#2d2452}
+.mision{color:#3a2f68}
+.chip{background:#e9defa}
+canvas{background:#b3a2ea}
+.overlay{background:rgba(198,184,244,.97)}
+.overlay p{color:#2d2452}
+.overlay h1{color:#2d2452;text-shadow:0 0 8px #fff,0 0 18px #f0a6d2}
+.tags span:nth-child(1){color:#2a5fa8}.tags span:nth-child(2){color:#1a7f5f}.tags span:nth-child(3){color:#b02c86}.tags span:nth-child(4){color:#8a5a00}
+button,a.menu-link,a.volver{font:inherit;font-weight:800;font-size:1.1rem;color:#2d2452;background:#f5b5da;border:2px solid #8f7bdc;border-radius:12px;padding:12px 36px;cursor:pointer;text-decoration:none;box-shadow:0 0 12px #f0a6d2,0 0 22px rgba(147,197,240,.7);text-shadow:none}
+button:hover,a.menu-link:hover,a.volver:hover{background:#f0a0d0}
+a.menu-link{background:#a8cff3;font-size:1rem;padding:10px 28px}
+a.menu-link:hover{background:#93c5f0}
+.mute{padding:4px 10px}
+a.volver{position:absolute;top:0;left:54px;padding:4px 12px;font-size:.8rem;border-radius:10px;line-height:1.5;z-index:5;background:#a8cff3}
+a.volver:hover{background:#93c5f0}
+.ayuda{color:#3a2f68}
+.grupo{background:#efe6fb}
+.def,.err{color:#2d2452}
+.err .q{color:#b02c86}
+.err code{color:#8a5a00}
+.rt{color:#8a5a00;text-shadow:none}
+.grupo h3{color:#2a5fa8;text-shadow:none}
+.stage::before,.stage::after{color:#2d2452;text-shadow:none}
+h2{background:linear-gradient(90deg,#4b34b8,#b52d8a,#8a5a00);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 0 6px rgba(255,255,255,.7))}
+@media(max-width:520px){h2{margin-top:36px}}
+
+
+/* ===== VIDEOS DE AYUDA (embebidos) ===== */
+.videos-ayuda{width:min(820px,94%);margin:28px auto 60px;padding:20px 22px;background:rgba(198,184,244,.97);border:2px solid #8f7bdc;border-radius:14px;box-shadow:0 0 12px rgba(143,123,220,.5);color:#2d2452;font-family:"Segoe UI",system-ui,sans-serif}
+.videos-ayuda h3{margin:0 0 6px;font-size:1.3rem;color:#2d2452}
+.videos-ayuda p{margin:0 0 14px;color:#3a2f68;font-size:.95rem}
+.videos-ayuda .v{position:relative;width:100%;padding-top:56.25%;margin-bottom:14px;border-radius:12px;overflow:hidden;background:#000;border:2px solid #5b9fe0;box-shadow:0 0 8px #93c5f0}
+.videos-ayuda .v:last-child{margin-bottom:0}
+.videos-ayuda iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.ayuda a.ver-video{color:#2a5fa8;font-weight:700}
+</style>
+</head>
+<script src="arcade-records.js"></script>
+<body>
+<main id="juego">
+  <button id="mute" class="mute" aria-label="Activar o quitar sonido">🔊</button>
+  <button id="full" class="mute full" aria-label="Pantalla completa">⛶</button>
+  <a id="volver" class="volver" href="juegoportada.html" aria-label="Volver al menú de juegos">⬅ Menú de juegos</a>
+  <h2>ATRAPA EL CÓDIGO</h2>
+  <div class="hud">
+    <span class="chip c1">PUNTOS <span id="pts">0</span></span>
+    <span class="chip c2" id="vidas" aria-label="Vidas"></span>
+    <span class="chip c3">RÉCORD <span id="rec">0</span></span>
+  </div>
+  <div class="mision" id="mision"></div>
+  <div class="stage">
+    <div class="borde"></div>
+    <canvas id="c" width="420" height="560"></canvas>
+    <div class="overlay" id="ov">
+      <div class="tags"><span>&lt;p&gt;</span><span>&lt;h1&gt;</span><span>&lt;a&gt;</span><span>&lt;img&gt;</span></div>
+      <h1 id="ovT">ATRAPA EL CÓDIGO</h1>
+      <p id="ovP">Atrapa los bloques de código correctos antes de que lleguen al suelo. Si te equivocas, pierdes una vida. Al final verás tus errores y qué significan.</p>
+      <button id="btn">▶ JUGAR</button>
+      <a class="menu-link" href="juegoportada.html">🎮 MENÚ DE JUEGOS</a>
+      <div class="rep" id="rep"></div>
+    </div>
+  </div>
+  <div class="ayuda">Mueve con el mouse, el dedo o las flechas ← → · <a class="ver-video" href="#videos">⬇ Video de ayuda</a></div>
+</main>
+<section class="videos-ayuda" id="videos">
+  <h3> VideoS de ayuda: Listas</h3>
+  <p>Míralo para repasar el tema antes o después de jugar.</p>
+    <p><a href="https://www.youtube.com/watch?v=ftz3NmWQUCg" target="_blank" rel="noopener">📺 Ver video en YouTube</a></p>
+  <p><a href="https://youtu.be/wQtqoCLacto" target="_blank" rel="noopener">📺 Ver video en YouTube</a></p>
+</section>
+
+
+<script>
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h) { this.rect(x, y, w, h); };
+}
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+let W = 420, H = 560, BY = H - 46, GY = H - 170, BW = 100;
+const $ = id => document.getElementById(id);
+const NEON = ['#4a86dc', '#d24aa8', '#3ea87f', '#d59a1c', '#8a6ae0', '#e07a3a'];
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+const Sound = (() => {
+  let ac, master, noise, timer, nextT = 0, step = 0, on = true;
+  const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+  const BASS = [45, 41, 48, 43];
+  const ARP = [[69, 72, 76], [65, 69, 72], [67, 72, 76], [67, 71, 74]];
+  function init() {
+    if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+    const A = window.AudioContext || window.webkitAudioContext;
+    if (!A) return;
+    ac = new A(); master = ac.createGain(); master.gain.value = 0.35; master.connect(ac.destination);
+    noise = ac.createBuffer(1, ac.sampleRate * 0.2, ac.sampleRate);
+    const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  const rd = () => { if (!on) return false; init(); return !!ac; };
+  function tone(f, t, dur, type, vol, f2) {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
+  }
+  function hat(t, vol) {
+    const s = ac.createBufferSource(), h = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noise; h.type = 'highpass'; h.frequency.value = 7000;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    s.connect(h); h.connect(g); g.connect(master); s.start(t); s.stop(t + 0.06);
+  }
+  function sched() {
+    while (nextT < ac.currentTime + 0.15) {
+      const bar = Math.floor(step / 16) % 4, i = step % 16;
+      if (i % 4 === 0) tone(150, nextT, 0.15, 'sine', 0.7, 40);
+      if (i % 4 === 2) hat(nextT, 0.25);
+      if (i % 2 === 0) tone(mtof(BASS[bar] + (i % 8 === 6 ? 12 : 0)), nextT, 0.18, 'sawtooth', 0.22);
+      tone(mtof(ARP[bar][[0, 1, 2, 1][i % 4]]), nextT, 0.12, 'square', 0.07);
+      nextT += 0.135 - Math.min(st.score, 300) / 300 * 0.025;
+      step++;
+    }
+  }
+  document.addEventListener('visibilitychange', () => { if (ac) document.hidden ? ac.suspend() : ac.resume(); });
+  return {
+    music() { if (!rd()) return; clearInterval(timer); step = 0; nextT = ac.currentTime + 0.1; timer = setInterval(sched, 25); },
+    stop() { clearInterval(timer); },
+    ok() { if (!rd()) return; const t = ac.currentTime; tone(660, t, .08, 'square', .18); tone(990, t + .07, .12, 'square', .18); },
+    bad() { if (!rd()) return; tone(220, ac.currentTime, .3, 'sawtooth', .25, 80); },
+    nivel() { if (!rd()) return; const t = ac.currentTime; [523, 659, 784, 1046].forEach((f, k) => tone(f, t + k * .08, .14, 'triangle', .25)); },
+    over() { if (!rd()) return; const t = ac.currentTime; [392, 330, 262, 196].forEach((f, k) => tone(f, t + k * .18, .28, 'triangle', .3)); },
+    set(v) { on = v; $('mute').textContent = on ? '🔊' : '🔇'; if (!on) clearInterval(timer); },
+    get on() { return on; }
+  };
+})();
+
+const MISIONES = [
+  { t: 'Etiquetas básicas', tt: 'etiquetas correctas',
+    def: 'Una etiqueta HTML es una palabra entre < > que le dice al navegador qué tipo de contenido mostrar. Casi siempre se abre <p> y se cierra </p>.',
+    okWhy: 'Estaba bien escrita: la etiqueta se abre y se cierra igual.',
+    ok: ['<p>Hola</p>', '<h1>Título</h1>', '<h2>Menú</h2>', '<h3>Sección</h3>', '<b>Texto</b>', '<p>Mi web</p>', '<h4>Datos</h4>', '<h6>Nota</h6>'],
+    bad: [{ t: '<p>Hola<p>', w: 'Falta la etiqueta de cierre: debe terminar con </p>.' },
+          { t: 'h1>Título</h1>', w: 'Falta el signo < al inicio de la etiqueta de apertura.' },
+          { t: '<p>Hola</b>', w: 'La etiqueta de cierre no coincide: se abrió p y se cerró b.' },
+          { t: '<h7>Hola</h7>', w: 'Los títulos solo llegan hasta h6; h7 no existe.' },
+          { t: '<p>Hola</p', w: 'Falta el signo > al final de la etiqueta de cierre.' },
+          { t: '<h1>Título</h2>', w: 'La etiqueta de cierre no coincide: se abrió h1 y se cerró h2.' },
+          { t: '<p Hola</p>', w: 'Falta el signo > para cerrar la etiqueta de apertura.' },
+          { t: '</p>Hola<p>', w: 'Están al revés: primero va la apertura <p> y luego el cierre </p>.' }] },
+  { t: 'Enlaces e imágenes', tt: 'enlaces e imágenes correctos',
+    def: 'Un enlace (<a>) lleva a otra página usando href. Una imagen (<img>) muestra una foto usando src y un texto alternativo alt.',
+    okWhy: 'Estaba bien escrito: usa el atributo correcto (href o src) entre comillas.',
+    ok: ['<a href="pagina.html">Ir</a>', '<img src="gato.png" alt="Gato">', '<a href="#inicio">Inicio</a>', '<img src="foto.jpg" alt="Foto">', '<a href="https://web.com">Web</a>', '<img src="logo.png" alt="Logo">', '<a href="contacto.html">Contacto</a>', '<img src="sol.jpg" alt="Sol">'],
+    bad: [{ t: '<a src="pagina.html">Ir</a>', w: 'El enlace usa href, no src.' },
+          { t: '<img href="gato.png">', w: 'La imagen usa src, no href.' },
+          { t: '<a href="pagina.html">Ir', w: 'Falta cerrar el enlace con </a>.' },
+          { t: '<image src="gato.png">', w: 'La etiqueta correcta es img, no image.' },
+          { t: '<a href="pagina.html>Ir</a>', w: 'Falta cerrar las comillas después de pagina.html.' },
+          { t: '<img>gato.png</img>', w: 'La imagen no lleva contenido ni cierre; se escribe <img src="...">.' },
+          { t: '<a link="pagina.html">Ir</a>', w: 'El atributo correcto del enlace es href, no link.' },
+          { t: '<img alt="Gato">', w: 'Falta el atributo src: sin él no sabe qué imagen mostrar.' }] },
+  { t: 'Listas', tt: 'listas correctas',
+    def: 'Una lista agrupa elementos. <ul> crea una lista con viñetas, <ol> una numerada, y cada elemento va dentro de <li>.',
+    okWhy: 'Estaba bien escrito: la lista y sus elementos usan las etiquetas correctas.',
+    ok: ['<ul>', '<ol>', '<li>Manzana</li>', '<li>Pan</li>', '</ul>', '</ol>', '<li>Leche</li>', '<ul><li>Uva</li></ul>'],
+    bad: [{ t: '<li>Manzana<li>', w: 'Falta cerrar el elemento con </li>.' },
+          { t: '<ul>Manzana</ul>', w: 'Cada elemento de la lista debe ir dentro de <li>.' },
+          { t: '<list>', w: 'La etiqueta list no existe; se usa <ul> o <ol>.' },
+          { t: '<il>Pan</il>', w: 'Está mal escrita: la etiqueta correcta es li.' },
+          { t: '<ul><li>Uva</ul>', w: 'Falta cerrar el elemento con </li> antes de cerrar la lista.' },
+          { t: '<ol>Pan</ol>', w: 'Cada elemento de la lista debe ir dentro de <li>.' },
+          { t: '<li>Pan</ul>', w: 'La etiqueta de cierre no coincide: se abrió li y se cerró ul.' },
+          { t: '<lu>', w: 'Está mal escrita: la etiqueta correcta es ul.' }] },
+  { t: 'Estructura de la página', tt: 'estructura correcta',
+    def: 'Toda página HTML se organiza dentro de <html>, con <head> (información como el título) y <body> (lo que se ve en pantalla).',
+    okWhy: 'Estaba bien escrito: es una parte válida de la estructura de una página HTML.',
+    ok: ['<!DOCTYPE html>', '<html>', '<head>', '<body>', '<title>Mi web</title>', '</body>', '</html>', '<meta charset="UTF-8">', '</head>'],
+    bad: [{ t: '<cuerpo>', w: 'Esa etiqueta no existe; el contenido visible va dentro de <body>.' },
+          { t: '<htlm>', w: 'Está mal escrita: la etiqueta correcta es html.' },
+          { t: '<title>Mi web<title>', w: 'Falta cerrar el título con </title>.' },
+          { t: '<bodi>', w: 'Está mal escrita: la etiqueta correcta es body.' },
+          { t: '<body>Hola</html>', w: 'La etiqueta de cierre no coincide: se abrió body y se cerró html.' },
+          { t: '<titulo>Mi web</titulo>', w: 'La etiqueta correcta es title, no titulo.' },
+          { t: '<!DOCTYPE>', w: 'Falta indicar el tipo de documento: debe ser <!DOCTYPE html>.' },
+          { t: '<cabeza>', w: 'Esa etiqueta no existe; la información de la página va en <head>.' }] },
+  { t: 'Formato de texto', tt: 'formato de texto correcto',
+    def: 'Estas etiquetas cambian cómo se ve el texto: <strong> para negrita, <em> para cursiva, <br> para saltar de línea y <hr> para dibujar una línea divisoria.',
+    okWhy: 'Estaba bien escrita: es una etiqueta de formato de texto válida.',
+    ok: ['<strong>Ojo</strong>', '<em>Hola</em>', '<i>Texto</i>', '<br>', '<hr>', '<u>Subrayado</u>', '<small>Nota</small>'],
+    bad: [{ t: '<strong>Ojo<strong>', w: 'Falta el cierre </strong>.' },
+          { t: '<negrita>Ojo</negrita>', w: 'La etiqueta negrita no existe; se usa <strong> o <b>.' },
+          { t: '</br>', w: 'El salto de línea se escribe <br>, sin barra al inicio.' },
+          { t: '<em>Hola</i>', w: 'La etiqueta de cierre no coincide: se abrió em y se cerró i.' },
+          { t: '<hr>Línea</hr>', w: 'hr no lleva contenido ni cierre; se escribe solo <hr>.' },
+          { t: '<cursiva>Hola</cursiva>', w: 'La etiqueta cursiva no existe; se usa <em> o <i>.' },
+          { t: '<small>Nota</smal>', w: 'El cierre está mal escrito: debe ser </small>.' }] },
+  { t: 'Contenedores', tt: 'contenedores correctos',
+    def: 'Un contenedor agrupa otras etiquetas para organizarlas: <div> es una caja general, <span> agrupa texto dentro de una línea, <section> una parte de la página, y <header> y <footer> son la parte de arriba y de abajo.',
+    okWhy: 'Estaba bien escrito: es un contenedor válido de HTML.',
+    ok: ['<div>', '</div>', '<span>Hola</span>', '<section>', '<div>Caja</div>', '<span>Rojo</span>', '<header>Inicio</header>', '<footer>Fin</footer>'],
+    bad: [{ t: '<div>Caja<div>', w: 'Falta cerrar la caja con </div>.' },
+          { t: '<dvi>Caja</dvi>', w: 'Está mal escrita: la etiqueta correcta es div.' },
+          { t: '<span>Rojo</div>', w: 'La etiqueta de cierre no coincide: se abrió span y se cerró div.' },
+          { t: '<caja>Hola</caja>', w: 'La etiqueta caja no existe; para agrupar se usa <div>.' },
+          { t: '<sectio>', w: 'Está mal escrita: la etiqueta correcta es section.' },
+          { t: '<span>Rojo<span>', w: 'Falta cerrar con </span>.' },
+          { t: '<footer>Fin</fotter>', w: 'El cierre está mal escrito: debe ser </footer>.' }] }
+];
+
+let st = { score: 0, lives: 5, m: 0, caught: 0, flash: 0, flashC: '#fff' };
+let blocks = [], parts = [], pops = [], px = W / 2, keys = {}, running = false, last = 0, gridOff = 0;
+let record = 0;
+try { record = +localStorage.getItem('atrapa_record') || 0; } catch (e) {}
+$('rec').textContent = record;
+
+// decoración de fondo
+let stars = [], floaters = [];
+const SYM = ['<html>', '<p>', '<h1>', '<a>', '</>', '<img>', '<ul>', '<li>', '<body>', '<br>'];
+function deco() {
+  stars = Array.from({ length: Math.round(W / 8) }, () => ({ x: rnd(0, W), y: rnd(0, GY), r: rnd(.6, 1.8), s: rnd(6, 22), c: NEON[Math.floor(rnd(0, NEON.length))] }));
+  floaters = Array.from({ length: Math.round(W / 45) + 3 }, () => ({ x: rnd(10, W - 50), y: rnd(0, GY), t: SYM[Math.floor(rnd(0, SYM.length))], v: rnd(8, 20), c: NEON[Math.floor(rnd(0, NEON.length))] }));
+}
+function resize() {
+  const r = cv.parentElement.getBoundingClientRect();
+  const asp = Math.max(r.width - 6, 100) / Math.max(r.height - 6, 100);
+  H = 560; W = Math.round(H * asp);
+  if (W < 340) { W = 340; H = Math.round(W / asp); }
+  cv.width = W; cv.height = H; BY = H - 46; GY = H - 170; BW = Math.max(100, Math.round(W * 0.12));
+  px = Math.min(Math.max(px, BW / 2), W - BW / 2);
+  deco();
+}
+
+function nuevaMision() { $('mision').innerHTML = 'Atrapa solo <b>' + MISIONES[st.m].tt + '</b>. Deja caer las incorrectas.'; }
+function hud() {
+  $('pts').textContent = st.score;
+  const v = Math.max(st.lives, 0);
+  $('vidas').textContent = '♥'.repeat(v) + '♡'.repeat(5 - v);
+}
+
+function start() {
+  st = { score: 0, lives: 5, m: 0, caught: 0, spawn: 0.4, speed: 70, flash: 0, flashC: '#fff', errors: [], mazo: {} };
+  $('rep').innerHTML = ''; $('ov').classList.remove('fin');
+  blocks = []; parts = []; pops = []; px = W / 2; running = true;
+  $('ov').classList.add('oculto');
+  Sound.music();
+  nuevaMision(); hud();
+}
+
+// baraja: cada bloque sale una vez antes de que se repita
+function sacar(m, tipo) {
+  const k = m + tipo;
+  if (!st.mazo[k] || !st.mazo[k].length) {
+    const a = MISIONES[m][tipo].slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    st.mazo[k] = a;
+  }
+  return st.mazo[k].pop();
+}
+
+function spawn() {
+  const M = MISIONES[st.m], ok = Math.random() < 0.6;
+  const it = sacar(st.m, ok ? 'ok' : 'bad');
+  const txt = ok ? it : it.t, why = ok ? M.okWhy : it.w;
+  ctx.font = '600 15px Consolas, monospace';
+  const w = ctx.measureText(txt).width + 24;
+  blocks.push({ txt, ok, why, m: st.m, w, h: 34, c: NEON[Math.floor(rnd(0, NEON.length))], x: w / 2 + Math.random() * (W - w), y: -20, v: st.speed * rnd(.85, 1.15) });
+}
+
+function burst(x, y, c, n) {
+  for (let i = 0; i < n; i++) { const a = rnd(0, 6.28), s = rnd(60, 220); parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 60, l: .7, c }); }
+}
+function flash(c) { st.flash = .3; st.flashC = c; }
+
+function update(dt) {
+  if (keys.ArrowLeft || keys.a) px -= Math.max(380, W * 0.9) * dt;
+  if (keys.ArrowRight || keys.d) px += Math.max(380, W * 0.9) * dt;
+  px = Math.max(BW / 2, Math.min(W - BW / 2, px));
+  st.spawn -= dt;
+  if (st.spawn <= 0) { spawn(); st.spawn = Math.max(0.9, 1.9 - st.score / 400) * Math.max(0.45, 420 / W); }
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    const b = blocks[i];
+    b.y += b.v * dt;
+    const hit = b.y + b.h / 2 >= BY && b.y - b.h / 2 <= BY + 24 && Math.abs(b.x - px) < (b.w + BW) / 2;
+    if (hit) {
+      if (b.ok) {
+        st.score += 10; st.caught++; Sound.ok(); flash('#2e9e5b'); burst(b.x, BY, b.c, 18);
+        pops.push({ x: b.x, y: BY - 20, t: '+10', c: '#2e9e5b', l: .9 });
+        if (st.caught % 5 === 0) { st.m = (st.m + 1) % MISIONES.length; st.speed += 8; Sound.nivel(); nuevaMision(); pops.push({ x: W / 2, y: H / 2, t: '¡NUEVA MISIÓN!', c: '#c98a00', l: 1.4 }); }
+      } else { st.lives--; Sound.bad(); fallo(b, 'Atrapaste un código incorrecto'); flash('#d63a9f'); burst(b.x, BY, '#d63a9f', 22); pops.push({ x: b.x, y: BY - 20, t: '✗', c: '#d63a9f', l: .9 }); }
+      blocks.splice(i, 1); hud();
+    } else if (b.y - b.h / 2 > H) {
+      if (b.ok) { st.lives--; Sound.bad(); fallo(b, 'Dejaste caer un código correcto'); flash('#d63a9f'); hud(); }
+      blocks.splice(i, 1);
+    }
+  }
+  if (st.lives <= 0) fin();
+}
+
+function fallo(b, que) { if (!st.errors.some(e => e.txt === b.txt)) st.errors.push({ txt: b.txt, que, why: b.why, m: b.m }); }
+
+function fin() {
+  running = false; Sound.stop(); Sound.over();
+  if (st.score > record) { record = st.score; $('rec').textContent = record; try { localStorage.setItem('atrapa_record', record); } catch (e) {} }
+  $('ovT').textContent = 'FIN DEL JUEGO';
+  $('ovP').textContent = 'Hiciste ' + st.score + ' puntos. ¿Puedes superarlos?';
+  $('btn').textContent = '▶ JUGAR DE NUEVO';
+  const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  let h = '<h3 class="rt">Lo que fallaste y cómo repasarlo</h3>';
+  MISIONES.forEach((M, i) => {
+    const es = st.errors.filter(e => e.m === i);
+    if (!es.length) return;
+    h += '<div class="grupo"><h3>' + M.t + '</h3><p class="def"><b>Definición:</b> ' + esc(M.def) + '</p>';
+    es.forEach(e => { h += '<div class="err"><code>' + esc(e.txt) + '</code><span class="q">' + e.que + '.</span> ' + esc(e.why) + '</div>'; });
+    h += '</div>';
+  });
+  $('rep').innerHTML = h;
+  $('ov').classList.add('fin'); $('ov').classList.remove('oculto'); $('ov').scrollTop = 0;
+}
+
+function fondo(dt) {
+  gridOff = (gridOff + dt * 40) % 40;
+  stars.forEach(s => { s.y += s.s * dt; if (s.y > GY) { s.y = 0; s.x = rnd(0, W); } });
+  floaters.forEach(f => { f.y -= f.v * dt; if (f.y < -20) { f.y = GY; f.x = rnd(10, W - 50); } });
+  parts.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 320 * dt; p.l -= dt; });
+  parts = parts.filter(p => p.l > 0);
+  pops.forEach(p => { p.y -= 40 * dt; p.l -= dt; });
+  pops = pops.filter(p => p.l > 0);
+  if (st.flash > 0) st.flash -= dt;
+}
+
+function draw() {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#b3a2ea'); g.addColorStop(.6, '#d3a5e6'); g.addColorStop(1, '#f2a9d3');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // estrellas
+  stars.forEach(s => { ctx.fillStyle = s.c; ctx.shadowColor = s.c; ctx.shadowBlur = 6; ctx.globalAlpha = .8; ctx.fillRect(s.x, s.y, s.r, s.r); });
+  ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+  // símbolos flotantes
+  ctx.font = '700 22px Consolas, monospace'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  floaters.forEach(f => { ctx.globalAlpha = .16; ctx.fillStyle = f.c; ctx.fillText(f.t, f.x, f.y); });
+  ctx.globalAlpha = 1;
+  // sol neón
+  const sg = ctx.createLinearGradient(0, GY - 90, 0, GY);
+  sg.addColorStop(0, '#c98a00'); sg.addColorStop(1, '#d63a9f');
+  ctx.save(); ctx.beginPath(); ctx.arc(W / 2, GY, 80, Math.PI, 0); ctx.clip();
+  ctx.globalAlpha = .55; ctx.fillStyle = sg; ctx.fillRect(0, GY - 90, W, 90);
+  ctx.fillStyle = '#dba6e1'; for (let i = 0; i < 5; i++) ctx.fillRect(0, GY - 8 - i * 14, W, 2 + i);
+  ctx.restore(); ctx.globalAlpha = 1;
+  // rejilla en perspectiva
+  ctx.lineWidth = 1.5; ctx.shadowBlur = 8;
+  ctx.strokeStyle = '#d63a9f'; ctx.shadowColor = '#d63a9f';
+  const nl = Math.ceil(W / 140) + 1;
+  for (let i = -nl; i <= nl; i++) { ctx.beginPath(); ctx.moveTo(W / 2 + i * 12, GY); ctx.lineTo(W / 2 + i * 70, H); ctx.stroke(); }
+  ctx.strokeStyle = '#3b8fe0'; ctx.shadowColor = '#3b8fe0';
+  for (let i = 0; i < 6; i++) { const t = (i * 40 + gridOff) / 240, y = GY + (H - GY) * t * t; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  ctx.strokeStyle = '#3b8fe0'; ctx.beginPath(); ctx.moveTo(0, GY); ctx.lineTo(W, GY); ctx.stroke();
+  ctx.shadowBlur = 0;
+  // bloques
+  ctx.font = '600 15px Consolas, monospace'; ctx.textAlign = 'center';
+  blocks.forEach(b => {
+    ctx.shadowColor = b.c; ctx.shadowBlur = 16; ctx.fillStyle = '#efe6fb'; ctx.strokeStyle = b.c; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(b.x - b.w / 2, b.y - b.h / 2, b.w, b.h, 8); ctx.fill(); ctx.stroke();
+    ctx.shadowBlur = 0; ctx.fillStyle = '#2d2452'; ctx.fillText(b.txt, b.x, b.y + 1);
+  });
+  // robot con cesta
+  const fc = st.flash > 0 ? st.flashC : '#3b8fe0';
+  ctx.shadowColor = fc; ctx.shadowBlur = 20; ctx.strokeStyle = fc; ctx.lineWidth = 3; ctx.fillStyle = '#cbbcf4';
+  ctx.beginPath(); ctx.roundRect(px - BW / 2, BY, BW, 26, 10); ctx.fill(); ctx.stroke();
+  ctx.shadowBlur = 0; ctx.strokeStyle = '#c98a00'; ctx.lineWidth = 2;
+  [-10, 10].forEach(o => { ctx.beginPath(); ctx.moveTo(px + o, BY + 4); ctx.lineTo(px + o, BY - 3); ctx.stroke(); ctx.fillStyle = '#ff4d6d'; ctx.beginPath(); ctx.arc(px + o, BY - 4, 2.5, 0, 6.28); ctx.fill(); });
+  ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(px - 17, BY + 3, 34, 20, 7); ctx.fill();
+  ctx.fillStyle = '#5b4a9e'; ctx.beginPath(); ctx.roundRect(px - 13, BY + 7, 26, 9, 4); ctx.fill();
+  ctx.fillStyle = '#3b8fe0'; ctx.shadowColor = '#3b8fe0'; ctx.shadowBlur = 8; ctx.fillRect(px - 8, BY + 9, 4, 5); ctx.fillRect(px + 4, BY + 9, 4, 5);
+  ctx.shadowBlur = 0;
+  // partículas y textos
+  parts.forEach(p => { ctx.globalAlpha = Math.max(p.l / .7, 0); ctx.fillStyle = p.c; ctx.shadowColor = p.c; ctx.shadowBlur = 8; ctx.fillRect(p.x, p.y, 4, 4); });
+  ctx.globalAlpha = 1; ctx.shadowBlur = 0; ctx.font = '800 20px "Segoe UI", sans-serif';
+  pops.forEach(p => { ctx.globalAlpha = Math.min(p.l, 1); ctx.fillStyle = p.c; ctx.shadowColor = p.c; ctx.shadowBlur = 12; ctx.fillText(p.t, p.x, p.y); });
+  ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+  // destello de borde
+  if (st.flash > 0) { ctx.globalAlpha = st.flash * 1.2; ctx.strokeStyle = st.flashC; ctx.lineWidth = 14; ctx.strokeRect(0, 0, W, H); ctx.globalAlpha = 1; }
+}
+
+function loop(now) {
+  const dt = Math.min((now - last) / 1000, 0.05); last = now;
+  if (running) update(dt);
+  fondo(dt); draw();
+  requestAnimationFrame(loop);
+}
+
+function mover(x) { const r = cv.getBoundingClientRect(); px = Math.max(BW / 2, Math.min(W - BW / 2, (x - r.left) * (W / r.width))); }
+cv.addEventListener('pointermove', e => mover(e.clientX));
+cv.addEventListener('pointerdown', e => mover(e.clientX));
+addEventListener('keydown', e => { keys[e.key] = true; if (e.key.startsWith('Arrow')) e.preventDefault(); });
+addEventListener('keyup', e => { keys[e.key] = false; });
+$('btn').addEventListener('click', start);
+$('full').addEventListener('click', () => {
+  try { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); } catch (e) {}
+});
+
+$('mute').addEventListener('click', () => {
+  Sound.set(!Sound.on);
+  try { localStorage.setItem('atrapa_mute', Sound.on ? '0' : '1'); } catch (e) {}
+  if (Sound.on && running) Sound.music();
+});
+try { if (localStorage.getItem('atrapa_mute') === '1') Sound.set(false); } catch (e) {}
+resize(); addEventListener('resize', resize);
+hud(); nuevaMision();
+requestAnimationFrame(t => { last = t; loop(t); });
+</script>
+</body>
+</html>

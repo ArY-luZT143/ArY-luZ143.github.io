@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Arcade | Récords</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,Helvetica,sans-serif;color:#fff;min-height:100vh;
+  background:linear-gradient(rgba(5,3,20,.72),rgba(5,3,20,.82)),url("arcadebckg.jpg.jpeg");
+  background-size:cover;background-position:center;background-attachment:fixed;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background:radial-gradient(circle at 15% 30%,rgba(0,238,255,.15),transparent 25%),
+  radial-gradient(circle at 85% 20%,rgba(255,0,180,.18),transparent 25%),
+  radial-gradient(circle at 50% 80%,rgba(110,0,255,.18),transparent 30%)}
+
+/* NAVEGACIÓN */
+nav{width:94%;margin:18px auto;min-height:72px;display:flex;align-items:center;justify-content:space-between;
+  padding:10px 25px;background:rgba(7,5,30,.9);border:2px solid #513dff;border-radius:18px;
+  box-shadow:0 0 8px #513dff,0 0 20px rgba(81,61,255,.7),inset 0 0 20px rgba(81,61,255,.15);backdrop-filter:blur(8px)}
+.logo{display:flex;align-items:center;gap:12px;font-size:25px;font-weight:bold;text-shadow:0 0 5px #00eaff,0 0 15px #00eaff}
+.logo-icon{width:48px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:12px;
+  background:#11102b;border:2px solid #00eaff;box-shadow:0 0 8px #00eaff,inset 0 0 12px rgba(0,234,255,.25)}
+.menu{display:flex;gap:7px;background:rgba(0,0,0,.35);padding:6px;border-radius:13px}
+.menu a{color:#ddd9ff;text-decoration:none;padding:12px 17px;border-radius:10px;font-weight:bold;
+  border:1px solid transparent;transition:.25s}
+.menu a:hover{color:#fff;border-color:#00eaff;box-shadow:0 0 8px #00eaff,0 0 20px rgba(0,234,255,.5);background:rgba(0,234,255,.08)}
+.menu .activo{color:#fff;border-color:#ff25d7;box-shadow:0 0 8px #ff25d7,0 0 20px rgba(255,37,215,.6);background:rgba(255,37,215,.12)}
+
+/* CONTENIDO */
+.wrap{width:94%;max-width:1000px;margin:30px auto 90px}
+.titulo{text-align:center;margin-bottom:35px}
+.emoji{font-size:48px;margin-bottom:5px;filter:drop-shadow(0 0 7px #00eaff) drop-shadow(0 0 12px #ff22d4)}
+h1{font-size:60px;font-weight:900;letter-spacing:4px;
+  text-shadow:0 0 5px #00eaff,0 0 15px #00eaff,0 0 30px #7b35ff,0 0 45px #ff22d4}
+.sub{display:inline-block;margin-top:12px;padding:13px 30px;border:2px solid #ff28d7;border-radius:30px;
+  background:rgba(12,7,40,.75);font-weight:bold;box-shadow:0 0 8px #ff28d7,0 0 20px rgba(255,40,215,.55)}
+.panel{background:rgba(7,5,25,.93);border:2px solid #513dff;border-radius:14px;padding:24px 28px;margin-bottom:26px;
+  box-shadow:0 0 12px rgba(81,61,255,.55)}
+h2{font-size:22px;margin-bottom:12px;text-shadow:0 0 8px #00eaff}
+.fila{display:flex;gap:12px;flex-wrap:wrap}
+input{flex:1;min-width:200px;padding:13px 16px;font-size:17px;color:#fff;background:rgba(0,0,0,.45);
+  border:2px solid #00eaff;border-radius:10px;outline:none}
+input:focus{box-shadow:0 0 12px #00eaff}
+.btn{cursor:pointer;color:#fff;font-weight:bold;font-size:16px;padding:13px 24px;border-radius:10px;
+  border:2px solid #ff25d7;background:rgba(255,37,215,.14);box-shadow:0 0 8px #ff25d7;transition:.25s}
+.btn:hover{background:rgba(255,37,215,.3)}
+.btn.suave{margin-top:18px;border-color:#6b6890;box-shadow:none;background:transparent;font-size:14px;color:#c8c4f0}
+.btn.suave:hover{border-color:#ff5a7a;color:#fff}
+#estado{margin-top:12px;color:#ddd9ff;line-height:1.5}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.chip{cursor:pointer;color:#ddd9ff;font-weight:bold;font-size:14px;padding:9px 15px;border-radius:20px;
+  border:1px solid #513dff;background:rgba(0,0,0,.35);transition:.2s}
+.chip:hover{border-color:#00eaff;color:#fff}
+.chip.on{color:#fff;border-color:#00eaff;background:rgba(0,234,255,.16);box-shadow:0 0 10px rgba(0,234,255,.6)}
+.tabla{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:520px}
+th{text-align:left;padding:10px 12px;color:#00eaff;border-bottom:2px solid #513dff}
+td{padding:12px;border-bottom:1px solid rgba(255,255,255,.1)}
+td:first-child{width:56px;font-size:20px}
+td:nth-child(3){font-weight:bold;color:#ffc400}
+tr.yo td{background:rgba(255,37,215,.14)}
+#vacio{padding:22px 4px;color:#ddd9ff;line-height:1.5}
+@media(max-width:860px){nav{flex-direction:column;gap:10px}.menu{flex-wrap:wrap;justify-content:center}h1{font-size:40px}}
+
+/* =====================================================
+   TEMA PASTEL  (reemplaza los negros por colores pastel)
+===================================================== */
+nav{background:rgba(190,176,240,.95);border-color:#8f7bdc;box-shadow:0 0 8px #a898e6,0 0 20px rgba(143,123,220,.55),inset 0 0 20px rgba(255,255,255,.25)}
+.logo{color:#2d2452;text-shadow:0 0 8px rgba(255,255,255,.85)}
+.logo-icon{background:#efe8fd;border-color:#5b9fe0;box-shadow:0 0 8px #93c5f0,inset 0 0 12px rgba(91,159,224,.3)}
+.menu{background:rgba(255,255,255,.38)}
+.menu a{color:#3a2f68;border:1px solid transparent}
+.menu a:hover{color:#2d2452;background:rgba(147,197,240,.6);border-color:#5b9fe0;box-shadow:0 0 8px #93c5f0}
+.menu .activo{color:#2d2452;background:rgba(240,166,210,.8);border-color:#d873b3;box-shadow:0 0 8px #f0a6d2}
+body{background:linear-gradient(rgba(110,92,175,.38),rgba(110,92,175,.52)),url("arcadebckg.jpg.jpeg");background-size:cover;background-position:center;background-attachment:fixed}
+h1{color:#fff;text-shadow:0 0 6px #7a5ce0,0 0 18px #e58fc0,0 3px 0 rgba(58,47,104,.6)}
+
+.sub{background:rgba(242,175,214,.92);color:#2d2452;text-shadow:none;border-color:#d873b3;box-shadow:0 0 8px #f0a6d2,0 0 20px rgba(240,166,210,.5)}
+.panel{background:rgba(198,184,244,.95);border-color:#8f7bdc;color:#2d2452;box-shadow:0 0 12px rgba(143,123,220,.5)}
+h2{color:#2d2452;text-shadow:none}
+input{color:#2d2452;background:rgba(255,255,255,.65);border-color:#5b9fe0}
+input::placeholder{color:#6a5f9a}
+input:focus{box-shadow:0 0 12px #93c5f0}
+.btn{color:#2d2452;background:rgba(240,166,210,.75);border-color:#d873b3;box-shadow:0 0 8px #f0a6d2}
+.btn:hover{background:#f0a6d2}
+.btn.suave{color:#4a3f7a;border-color:#8f7bdc;background:transparent;box-shadow:none}
+.btn.suave:hover{border-color:#d6304f;color:#2d2452;background:rgba(214,48,79,.12)}
+#estado,#vacio{color:#2d2452}
+.chip{color:#3a2f68;border-color:#8f7bdc;background:rgba(255,255,255,.42)}
+.chip:hover{border-color:#5b9fe0;color:#2d2452}
+.chip.on{color:#2d2452;border-color:#5b9fe0;background:rgba(147,197,240,.75);box-shadow:0 0 10px rgba(91,159,224,.6)}
+th{color:#2a5fa8;border-bottom:2px solid #8f7bdc}
+td{color:#2d2452;border-bottom:1px solid rgba(45,36,82,.18)}
+td:nth-child(3){color:#8a5a00}
+tr.yo td{background:rgba(240,166,210,.55)}
+.emoji{filter:drop-shadow(0 0 6px #fff)}
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><div class="logo-icon">🎮</div>Mini Arcade</div>
+  <div class="menu">
+    <a href="portada.html">🏠 Inicio</a>
+    <a href="juegoportada.html">🎮 Juegos</a>
+    <a href="guia.html">📖 Guía</a>
+    <a href="records.html" class="activo">🏆 Récords</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <section class="titulo">
+    <h1>RÉCORDS</h1>
+    <div class="sub">♥ LOS MEJORES PUNTAJES DEL ARCADE ♥</div>
+  </section>
+
+  <section class="panel">
+    <h2>¿Cómo te llamas?</h2>
+    <div class="fila">
+      <input id="nombre" maxlength="16" placeholder="Escribe tu nombre de jugador" autocomplete="off" aria-label="Nombre de jugador">
+      <button class="btn" id="guardar" type="button">Guardar nombre</button>
+    </div>
+    <p id="estado"></p>
+  </section>
+
+  <section class="panel">
+    <div class="chips" id="chips"></div>
+    <div class="tabla">
+      <table>
+        <thead><tr><th>#</th><th>Jugador</th><th>Puntos</th><th>Juego</th><th>Fecha</th></tr></thead>
+        <tbody id="filas"></tbody>
+      </table>
+    </div>
+    <p id="vacio" hidden>Aún no hay récords aquí. Juega una partida y aparecerás en la lista.</p>
+  </section>
+
+</main>
+
+<script src="arcade-records.js"></script>
+<script>
+(function () {
+  var R = ArcadeRecords, filtro = "todos";
+  var $ = function (id) { return document.getElementById(id); };
+  var inp = $("nombre"), estado = $("estado");
+
+  function pintarEstado() {
+    var n = R.nombre();
+    if (n) { inp.value = n; estado.textContent = "Jugando como " + n + ". Tus puntajes se guardarán con este nombre."; }
+    else { estado.textContent = "Aún no tienes nombre. Escríbelo para aparecer en la lista de récords."; }
+  }
+
+  function pintarChips() {
+    var cont = $("chips"); cont.innerHTML = "";
+    var items = [["todos", "🏆 Todos"]].concat(Object.keys(R.JUEGOS).map(function (k) { return [k, R.JUEGOS[k]]; }));
+    items.forEach(function (it) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "chip" + (it[0] === filtro ? " on" : ""); b.textContent = it[1];
+      b.onclick = function () { filtro = it[0]; pintarChips(); pintarTabla(); };
+      cont.appendChild(b);
+    });
+  }
+
+  function pintarTabla() {
+    var lista = R.lista(filtro).slice(0, 10), yo = R.nombre(), cuerpo = $("filas");
+    cuerpo.innerHTML = ""; $("vacio").hidden = lista.length > 0;
+    lista.forEach(function (e, i) {
+      var tr = document.createElement("tr"); if (yo && e.n === yo) tr.className = "yo";
+      [i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1, e.n, e.p, R.JUEGOS[e.j] || e.j,
+       new Date(e.f).toLocaleDateString("es")].forEach(function (v) {
+        var td = document.createElement("td"); td.textContent = v; tr.appendChild(td);
+      });
+      cuerpo.appendChild(tr);
+    });
+  }
+
+  $("guardar").onclick = function () {
+    if (R.setNombre(inp.value)) { pintarEstado(); pintarTabla(); }
+    else { estado.textContent = "Escribe un nombre para poder guardarlo."; }
+  };
+  inp.addEventListener("keydown", function (e) { if (e.key === "Enter") $("guardar").click(); });
+
+  pintarEstado(); pintarChips(); pintarTabla();
+
+  // Récords compartidos: baja los de todos los jugadores y se actualiza cada 30 s
+  function refrescar() {
+    R.cargar(function (ok) {
+      if (ok) pintarTabla();
+      else if (R.compartido) $("vacio").textContent = "No se pudieron cargar los récords globales. Mostrando los de este navegador.";
+    });
+  }
+  if (R.compartido) { refrescar(); setInterval(refrescar, 30000); }
+})();
+</script>
+
+<!-- Música de fondo (necesita musica.js y musica.mp3 en la misma carpeta) -->
+<script src="musica.js"></script>
+</body>
+</html>
